@@ -32,9 +32,9 @@ body{
   --ln2:#2c2c2c;
   --t0:#ffffff;
   --t1:#e8e8e8;
-  --t2:#b0b0b0;
-  --t3:#787878;
-  --t4:#585858;
+  --t2:#b8b8b8;
+  --t3:#848484;
+  --t4:#6a6a6a;
 }
 
 /* ── NAV ── */
@@ -632,6 +632,7 @@ nav{z-index:200!important;}
   </div>
   <div class="comment-feed" id="cmtFeed"></div>
 </div>
+<p style="font-size:10px;color:var(--t4);text-align:center;margin-top:10px;letter-spacing:.2px;">작성된 글은 랜덤 시간에 커뮤니티에 표시됩니다</p>
 </div>
 
 <script>
@@ -949,83 +950,85 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeWriteModal
   const PI2=Math.PI*2;
   let W,H,S;
 
-  function resize(){
-    W=cv.width=window.innerWidth;
-    H=cv.height=window.innerHeight;
-    S=Math.min(W,H);
-  }
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;S=Math.min(W,H);}
   window.addEventListener('resize',resize);
   resize();
 
-  /* ── 2 large atmospheric blobs ── */
-  const blobs=[
-    {cx:.1, cy:.38,rx:.26,ry:.22,sz:.68,a:.17,px:0,  py:1.4, sx:.00018,sy:.00014},
-    {cx:.88,cy:.62,rx:.22,ry:.28,sz:.58,a:.14,px:2.2,py:.6,  sx:.00013,sy:.00019},
+  /* ── 5 orbs rendered with 'screen' blending — overlap = brighter ── */
+  const orbs=[
+    {cx:.08, cy:.22, rx:.28,ry:.2,  sz:.7,  r:200,g:12,b:0, a:.38, px:0,   py:1.2, sx:.00016,sy:.00013},
+    {cx:.92, cy:.78, rx:.22,ry:.28, sz:.62, r:160,g:6, b:0, a:.32, px:2.1, py:.55, sx:.00012,sy:.00018},
+    {cx:.48, cy:.5,  rx:.18,ry:.16, sz:.5,  r:230,g:20,b:0, a:.24, px:1.0, py:2.4, sx:.00021,sy:.00015},
+    {cx:.18, cy:.88, rx:.2, ry:.14, sz:.44, r:140,g:5, b:0, a:.28, px:3.1, py:.8,  sx:.00014,sy:.00020},
+    {cx:.82, cy:.12, rx:.24,ry:.18, sz:.48, r:190,g:14,b:0, a:.22, px:1.6, py:3.0, sx:.00017,sy:.00012},
   ];
 
-  /* ── 3 glowing arc rings (centered, rotating at different speeds) ── */
+  /* ── 2 glowing arcs (centered, rotating) ── */
   const arcs=[
-    {rs:.40, span:Math.PI*.72, phase:0,           spd: .000052, blur:52, al:.14, lw:1.2},
-    {rs:.60, span:Math.PI*.50, phase:Math.PI*.85,  spd:-.000038, blur:68, al:.09, lw:.9},
-    {rs:.82, span:Math.PI*1.05,phase:Math.PI*1.55, spd: .000028, blur:88, al:.06, lw:.7},
+    {rs:.42, span:Math.PI*.68, phase:0,          spd: .000048, blur:60, al:.28, lw:1.4},
+    {rs:.68, span:Math.PI*.52, phase:Math.PI*.9, spd:-.000034, blur:80, al:.18, lw:1.0},
   ];
 
-  function drawArc(cx,cy,r,rot,span,blur,al,lw){
-    /* outer glow pass */
-    ctx.save();
-    ctx.shadowColor='rgba(255,36,0,.95)';
-    ctx.shadowBlur=blur;
-    ctx.strokeStyle=`rgba(255,48,0,${al})`;
-    ctx.lineWidth=lw;
-    ctx.lineCap='round';
-    ctx.beginPath();ctx.arc(cx,cy,r,rot,rot+span);ctx.stroke();
-    /* bright core pass */
-    ctx.shadowBlur=blur*.35;
-    ctx.strokeStyle=`rgba(255,90,30,${al*.55})`;
-    ctx.lineWidth=lw*.35;
-    ctx.beginPath();ctx.arc(cx,cy,r,rot,rot+span);ctx.stroke();
-    ctx.restore();
-  }
+  /* ── 1 diagonal light streak ── */
+  let streakProg=0;
 
   function frame(ts){
     ctx.clearRect(0,0,W,H);
     const cx=W/2, cy=H/2;
 
-    /* blobs */
-    for(const b of blobs){
-      const x=(b.cx+Math.sin(ts*b.sx+b.px)*b.rx)*W;
-      const y=(b.cy+Math.cos(ts*b.sy+b.py)*b.ry)*H;
-      const r=b.sz*S*(0.86+Math.sin(ts*.00030+b.px)*.14);
+    /* orbs — screen blend so overlaps bloom */
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    for(const o of orbs){
+      const x=(o.cx+Math.sin(ts*o.sx+o.px)*o.rx)*W;
+      const y=(o.cy+Math.cos(ts*o.sy+o.py)*o.ry)*H;
+      const r=o.sz*S*(0.84+Math.sin(ts*.00028+o.px)*.16);
       const gr=ctx.createRadialGradient(x,y,0,x,y,r);
-      gr.addColorStop(0,  `rgba(155,7,0,${b.a})`);
-      gr.addColorStop(.42,`rgba(130,5,0,${+(b.a*.32).toFixed(3)})`);
-      gr.addColorStop(1,  `rgba(90,3,0,0)`);
-      ctx.save();
+      gr.addColorStop(0,  `rgba(${o.r},${o.g},${o.b},${o.a})`);
+      gr.addColorStop(.35,`rgba(${o.r},${o.g},${o.b},${+(o.a*.28).toFixed(3)})`);
+      gr.addColorStop(1,  `rgba(${o.r},${o.g},${o.b},0)`);
       ctx.beginPath();ctx.arc(x,y,r,0,PI2);
       ctx.fillStyle=gr;ctx.fill();
-      ctx.restore();
     }
+    ctx.restore();
 
     /* arcs */
     for(const a of arcs){
-      drawArc(cx,cy, a.rs*S, ts*a.spd+a.phase, a.span, a.blur, a.al, a.lw);
+      const rot=ts*a.spd+a.phase;
+      const r=a.rs*S;
+      ctx.save();
+      ctx.shadowColor='rgba(255,50,0,1)';
+      ctx.shadowBlur=a.blur;
+      ctx.strokeStyle=`rgba(255,60,5,${a.al})`;
+      ctx.lineWidth=a.lw;ctx.lineCap='round';
+      ctx.beginPath();ctx.arc(cx,cy,r,rot,rot+a.span);ctx.stroke();
+      ctx.shadowBlur=a.blur*.3;
+      ctx.strokeStyle=`rgba(255,100,40,${a.al*.5})`;
+      ctx.lineWidth=a.lw*.3;
+      ctx.beginPath();ctx.arc(cx,cy,r,rot,rot+a.span);ctx.stroke();
+      ctx.restore();
     }
 
-    /* slow diagonal aurora */
-    const ap=(Math.sin(ts*.000060)+1)*.5;
-    const as=Math.max(0,ap-.2), ae=Math.min(1,ap+.2);
-    const ag=ctx.createLinearGradient(0,H,W,0);
-    ag.addColorStop(0, 'rgba(0,0,0,0)');
-    ag.addColorStop(as,'rgba(0,0,0,0)');
-    ag.addColorStop(ap,'rgba(145,6,0,.034)');
-    ag.addColorStop(ae,'rgba(0,0,0,0)');
-    ag.addColorStop(1, 'rgba(0,0,0,0)');
-    ctx.fillStyle=ag;ctx.fillRect(0,0,W,H);
+    /* diagonal streak — slow crawl top-right → bottom-left */
+    streakProg=(ts*.000014)%1;
+    const sx1=W*(1.2-streakProg*1.8), sy1=-H*.1+streakProg*H*.3;
+    const sx2=sx1-W*.18, sy2=sy1+H*.55;
+    const sg=ctx.createLinearGradient(sx1,sy1,sx2,sy2);
+    sg.addColorStop(0,'rgba(255,40,0,0)');
+    sg.addColorStop(.4,'rgba(255,40,0,.07)');
+    sg.addColorStop(.6,'rgba(255,40,0,.07)');
+    sg.addColorStop(1,'rgba(255,40,0,0)');
+    ctx.save();
+    ctx.strokeStyle=sg;
+    ctx.lineWidth=1.5;
+    ctx.globalAlpha=.9;
+    ctx.beginPath();ctx.moveTo(sx1,sy1);ctx.lineTo(sx2,sy2);ctx.stroke();
+    ctx.restore();
 
     /* edge vignette */
-    const vg=ctx.createRadialGradient(cx,cy,S*.22,cx,cy,S*.95);
+    const vg=ctx.createRadialGradient(cx,cy,S*.18,cx,cy,S*.92);
     vg.addColorStop(0,'rgba(0,0,0,0)');
-    vg.addColorStop(1,'rgba(0,0,0,.5)');
+    vg.addColorStop(1,'rgba(0,0,0,.58)');
     ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
 
     requestAnimationFrame(frame);
