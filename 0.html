@@ -793,7 +793,6 @@ textarea.winput{resize:none;min-height:90px;line-height:1.6}
       <label class="wlabel">글 내용</label>
       <textarea class="winput" id="wText" placeholder="내용을 입력하세요" maxlength="100"></textarea>
     </div>
-    <p style="font-size:12px;color:#aaa;text-align:center;margin-bottom:10px">등록 후 1~60분 사이에 커뮤니티에 표시됩니다.</p>
     <button class="wsubmit" onclick="submitWrite()">글 올리기</button>
   </div>
 </div>
@@ -818,13 +817,9 @@ function submitWrite(){
   if(!text){ alert('내용을 입력해주세요'); return; }
 
   closeWriteModal();
-  // 1~60분 사이 랜덤 딜레이 후 피드에 표시
-  const delayMins = Math.floor(Math.random() * 60) + 1;
-  const delayMs = delayMins * 60 * 1000;
-  setTimeout(() => {
-    const timeStr = delayMins === 1 ? '방금 전' : `${delayMins}분 전`;
-    userQueue.push({nick, text, timeStr});
-  }, delayMs);
+  // 1~3분 사이 랜덤 딜레이 후 봇 댓글 타이밍에 표시
+  const delayMs = (Math.floor(Math.random() * 3) + 1) * 60 * 1000;
+  setTimeout(() => { userQueue.push({nick, text}); }, delayMs);
 }
 
 
