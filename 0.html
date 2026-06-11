@@ -767,7 +767,11 @@ document.addEventListener('DOMContentLoaded',function(){
   const startOffset=Math.floor(Math.random()*9000);
   for(let i=0;i<startOffset;i++) makeDynamic();
   for(let i=0;i<5;i++) addComment();
-  setInterval(addComment,10000);
+  function scheduleNext(){
+    const delay=Math.floor(Math.random()*50000)+10000;
+    setTimeout(()=>{ addComment(); scheduleNext(); }, delay);
+  }
+  scheduleNext();
 });
 </script>
 <footer class="page">
@@ -857,8 +861,7 @@ function submitWrite(){
   if(!text){ alert('내용을 입력해주세요'); return; }
 
   closeWriteModal();
-  const delayMs = (Math.floor(Math.random() * 3) + 1) * 60 * 1000;
-  setTimeout(() => { userQueue.push({nick, text}); }, delayMs);
+  userQueue.push({nick, text});
 }
 
 
