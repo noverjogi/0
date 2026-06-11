@@ -312,6 +312,33 @@ footer{
 .rcard.r3 .bar-fill{background:linear-gradient(90deg,#5a88a8,#7aa0c0)}
 .rcard.r3 .stag{background:rgba(122,160,192,.08);border-color:rgba(122,160,192,.25);color:#7aa0c0}
 .rcard.r2 .rname, .rcard.r3 .rname{color:var(--t2)}
+
+/* ── BG CANVAS ── */
+#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+nav{z-index:200!important;}
+.hero,.page,footer,.footer-spacer,
+.wmodal-overlay{position:relative;z-index:1;}
+.hero-bg{z-index:0;}
+
+/* ── WRITE NOTICE ── */
+.wnotice{
+  display:flex;align-items:flex-start;gap:10px;
+  background:rgba(255,36,0,.07);
+  border:1px solid rgba(255,36,0,.18);
+  border-left:3px solid rgba(255,36,0,.65);
+  border-radius:4px;
+  padding:11px 14px;
+  font-size:12px;color:#bbb;line-height:1.6;
+  margin-bottom:18px;
+}
+.wnotice-icon{
+  flex-shrink:0;width:17px;height:17px;
+  border-radius:50%;background:rgba(255,36,0,.85);
+  color:#fff;font-size:10px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  margin-top:1px;letter-spacing:0;
+}
+.wnotice strong{color:#ff5533;}
 </style>
 </head>
 <body>
@@ -551,38 +578,41 @@ footer{
   background:#2a2a2a;
   border:1px solid #2a2a2a;
   border-radius:6px;overflow:hidden;
+  height:320px;
 }
 .cmt{
   background:#1a1a1a;
   padding:13px 16px;
   display:flex;flex-direction:column;gap:4px;
-  animation:cmtIn .55s cubic-bezier(0.22,1,0.36,1) both;
+  animation:cmtIn .54s cubic-bezier(0.22,1,0.36,1) both;
   position:relative;
   overflow:hidden;
+  flex-shrink:0;
 }
 .cmt::after{
   content:'';
-  position:absolute;inset:0;left:0;
-  background:linear-gradient(90deg,rgba(255,36,0,.12) 0%,transparent 60%);
-  animation:cmtFlash .7s ease forwards;
+  position:absolute;inset:0;
+  background:linear-gradient(90deg,rgba(255,36,0,.26) 0%,rgba(255,36,0,.08) 42%,transparent 72%);
+  animation:cmtGlow .85s ease forwards;
   pointer-events:none;
 }
 .cmt.leaving{
-  animation:cmtOut .42s cubic-bezier(0.4,0,1,1) forwards;
+  animation:cmtOut .38s cubic-bezier(0.4,0,1,1) forwards;
 }
 @keyframes cmtIn{
-  0%  {opacity:0;transform:translateY(-18px) scaleY(.88);box-shadow:inset 2px 0 0 var(--red)}
-  55% {transform:translateY(2px) scaleY(1.01);box-shadow:inset 2px 0 0 rgba(255,36,0,.4)}
-  100%{opacity:1;transform:translateY(0) scaleY(1);box-shadow:inset 2px 0 0 transparent}
+  0%  {opacity:0;max-height:0;padding:0 16px;}
+  36% {max-height:120px;padding:13px 16px;opacity:0;transform:translateY(-8px);}
+  68% {opacity:1;transform:translateY(3px);}
+  100%{opacity:1;transform:translateY(0);max-height:120px;padding:13px 16px;}
 }
-@keyframes cmtFlash{
-  0%  {opacity:1}
-  100%{opacity:0}
+@keyframes cmtGlow{
+  0%  {opacity:1;}
+  100%{opacity:0;}
 }
 @keyframes cmtOut{
-  0%  {opacity:1;max-height:100px;padding:13px 16px;transform:translateX(0)}
-  45% {opacity:0;transform:translateX(28px)}
-  100%{opacity:0;max-height:0;padding:0 16px;transform:translateX(28px)}
+  0%  {opacity:1;max-height:120px;padding:13px 16px;}
+  32% {opacity:0;}
+  100%{opacity:0;max-height:0;padding:0;}
 }
 .cmt-top{display:flex;align-items:center;gap:8px}
 .cmt-nick{
@@ -614,149 +644,154 @@ const STOCK_NAMES={
 };
 function nm(t){const a=STOCK_NAMES[t];return a[Math.floor(Math.random()*a.length)];}
 
-// ── 네이버 종토방 스타일 80% ──
-
-// 1) 수급/분석/세력 스타일
-const A_ANALYSIS = [
-  (t)=>[t,`${nm(t)} 외인이 오늘만 수십만주 쓸어담았네. 뭔가 있는 거 아니냐`],
-  (t)=>[t,`${nm(t)} 기관 사흘째 순매수 중. 세력 매집 완료 신호 아님?`],
-  (t)=>[t,`${nm(t)} 차트가 딱 눌림목 패턴임. 지금이 마지막 매수 기회임 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 거래량 봐봐. 평소의 몇 배임. 세력 개입 확실해 보임`],
-  (t)=>[t,`${nm(t)} 이 가격대가 역사적 저점임. 세력이 조용히 모으고 있는 거 보임`],
-  (t)=>[t,`${nm(t)} RSI 과매도 구간 진입. 기술적 반등 나올 타이밍임`],
-  (t)=>[t,`${nm(t)} 외인이 연속 순매수 중인데 그냥 지나치면 나중에 땅 치는 거임`],
-  (t)=>[t,`${nm(t)} 볼린저 밴드 하단 터치함. 이제 반등 나오는 패턴 맞음`],
-  (t)=>[t,`${nm(t)} 기관 오늘도 순매수. 이거 모르고 팔면 진짜 손해임 ㄹㅇ`],
-  (t)=>[t,`${nm(t)} 20일선 지지받는 중. 여기서 터지면 단기 30% 각임`],
-  (t)=>[t,`${nm(t)} 세력이 눌러놓고 모으는 중인 것 같음. 이런 패턴 전에 봤음`],
-  (t)=>[t,`${nm(t)} 외인 매수 연속으로 들어오는데 이거 뭔가 알고 있는 거 아님?`],
-  (t)=>[t,`${nm(t)} 기관 매집 패턴 보면 조만간 급등 나올 것 같은데 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 거래량 터지면서 양봉 나왔음. 이제 본격 상승 시작 아닌가`],
-  (t)=>[t,`${nm(t)} 수급 보면 답 나옴. 외인+기관 동시 매수는 진짜 신호임`],
-];
-
-// 2) 급등 예언/확신 스타일
-const A_PREDICT = [
-  (t)=>[t,`${nm(t)} 이번 주 안에 급등 나옴. 세력이 누르는 거 다 보임. 두고봐`],
-  (t)=>[t,`${nm(t)} 세력 매집 완료됐음. 조만간 쩜상 각 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 지금이 바닥임. 다음 주 보면 알 거임 ㄹㅇ`],
-  (t)=>[t,`${nm(t)} 아침에 쩜상 예상. 거래량이 이미 다 말해주고 있음`],
-  (t)=>[t,`${nm(t)} 급등 임박이 차트에서 너무 보임. 나만 보이는 거임?`],
-  (t)=>[t,`${nm(t)} 내일 장 시작부터 폭발 각임. 오늘 안 담으면 후회함 ㄱㄱ`],
-  (t)=>[t,`${nm(t)} 이거 곧 터짐. 소문 돌기 전에 사야 함 ㄹㅇ`],
-  (t)=>[t,`${nm(t)} 조만간 신고가 갱신할 것 같음. 세력 매집 패턴 그대로`],
-  (t)=>[t,`${nm(t)} 오를 게 뻔히 보이는데 왜 안 사냐 ㅋㅋ 나중에 땅 침`],
-  (t)=>[t,`${nm(t)} 단기 50% 이상 목표. 차트가 다 말해줌 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 이번엔 진짜 갈 것 같음. 차트+수급 다 맞아 떨어짐`],
-  (t)=>[t,`${nm(t)} 지금 안 사면 나중에 이 가격 다시 못 봄 ㄹㅇ`],
-];
-
-// 3) 수익/매수 스타일
-const A_EXIT = [
-  (t)=>[t,`${nm(t)} 오늘 +8% 먹었음. 레이더 진짜네 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 들어간 지 사흘 만에 +12% ㅋㅋ 존버가 답임`],
-  (t)=>[t,`${nm(t)} 수익 냈음. 레이더 없었으면 이 종목 평생 몰랐을 듯`],
-  (t)=>[t,`${nm(t)} 목표가 도달해서 절반 익절함. 나머지는 계속 홀딩 ㄱㄱ`],
-  (t)=>[t,`${nm(t)} 레이더 보고 담았더니 +18% 나왔음. 추가 매수 고민 중`],
-  (t)=>[t,`${nm(t)} 단기 목표가 먼저 달성됨. 장기로 가져갈 것 같음 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 수익 실현하고 다시 눌림에 재진입함 ㄱㄱ`],
-  (t)=>[t,`${nm(t)} 오늘 장 시작부터 강세. 레이더 믿고 들어온 게 맞았음`],
-];
-
-// 4) 레이더 극찬 스타일
-const A_PRAISE = [
-  (t)=>[t,`${nm(t)} 레이더 보고 들어왔는데 수익 났음. 믿길 잘했다 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 레이더에서 찍혔을 때 바로 샀는데 진짜 올랐음 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 이 사이트 적중률 실화냐 ㅋㅋ 찍은 거 전부 갔잖아`],
-  (t)=>[t,`${nm(t)} 레이더 없었으면 이 종목 평생 몰랐을 듯. 진짜로`],
-  (t)=>[t,`${nm(t)} 이거 무료로 쓰는 게 맞나 싶을 정도로 정확함 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 레이더 포착 이후 흐름 보면 진짜 근거 있는 픽임`],
-  (t)=>[t,`${nm(t)} 레이더 찍은 거 다 올랐음. 이거 그냥 따라가면 됨`],
-  (t)=>[t,`${nm(t)} 주식 10년 했는데 이런 분석은 처음 봄 ㄷㄷ`],
-  (t)=>[t,`${nm(t)} 레이더 찍으면 얼마 뒤에 진짜 가더라 ㄹㅇ`],
-  (t)=>[t,`${nm(t)} 레이더 알게 된 게 인생에서 제일 잘한 일임 ㅋㅋ`],
-  (t)=>[t,`${nm(t)} 덕에 주식 인생 바뀌었습니다. 진심으로 고마움`],
-  (t)=>[t,`${nm(t)} 분석 퀄리티가 유료 서비스보다 훨씬 낫습니다 ㄷㄷ`],
-];
-
-// 반말 + ~냐 토론 스타일
-const A_DISCUSS = [
-  (t)=>[t,`${nm(t)} 지금 사도 되는 거냐? 차트 보니까 눌린 것 같아서`],
-  (t)=>[t,`${nm(t)} 이게 진짜 가는 거냐 ㄷㄷ 거래량이 심상치 않음`],
-  (t)=>[t,`${nm(t)} 세력 들어온 거 맞냐? 이 거래량 그냥 나온 게 아님`],
-  (t)=>[t,`${nm(t)} 오늘 못 사면 진짜 후회하는 거 아니냐`],
-  (t)=>[t,`${nm(t)} 이거 곧 터지는 거 아니냐 ㄷㄷ 느낌 온다`],
-  (t)=>[t,`${nm(t)} 레이더 찍혔는데 안 사면 바보 아니냐`],
-  (t)=>[t,`${nm(t)} 지금 들어가는 게 늦은 거 아니냐`],
-  (t)=>[t,`${nm(t)} 이거 진짜 오르는 거 맞냐? 확신 좀 줘봐`],
-  (t)=>[t,`${nm(t)} 기관이 이렇게 사는데 안 따라가면 손해 아니냐`],
-  (t)=>[t,`${nm(t)} 공시 나오기 전에 담는 게 맞는 거 아니냐`],
-  (t)=>[t,`${nm(t)} 이 가격이 진짜 바닥이냐? 더 빠지면 어쩌냐`],
-  (t)=>[t,`${nm(t)} 외인이 왜 이렇게 사는 거냐. 뭔가 알고 있는 거 아니냐`],
-  (t)=>[t,`${nm(t)} 오늘 담았는데 잘 한 거 맞냐 ㅋㅋ 레이더 믿고 질렀음`],
-  (t)=>[t,`${nm(t)} 이번 주 안에 터지는 거냐? 느낌이 오는데`],
-  (t)=>[t,`${nm(t)} 추가 매수 해도 되는 거냐? 평단 더 낮출까 고민임`],
-  (t)=>[t,`${nm(t)} 목표가까지 얼마나 걸리는 거냐. 존버 각인가`],
-  (t)=>[t,`${nm(t)} 세력이 모으는 거 맞냐? 이 패턴 전에 본 것 같음`],
-  (t)=>[t,`${nm(t)} 친구한테도 알려줬는데 같이 올라가면 좋겠음 ㅋㅋ`],
-  (t)=>[t,`${nm(t)} 레이더 1위 찍혔을 때 바로 담음. 차트가 너무 예쁨`],
-  (t)=>[t,`${nm(t)} 단기 모멘텀 살아있냐? 이번 주 뭔가 나올 것 같음`],
-  (t)=>[t,`${nm(t)} 장 끝나고 기관 대량 매수 들어왔던데 이거 뭔 신호냐`],
-  (t)=>[t,`${nm(t)} 지금 못 사면 다음엔 이 가격 못 보는 거 아니냐`],
-  (t)=>[t,`${nm(t)} 수급 계속 들어오는데 언제 터지는 거냐 진짜`],
-  (t)=>[t,`${nm(t)} 목표가 달성 전에 팔면 바보 아니냐. 그냥 홀딩함`],
-  (t)=>[t,`${nm(t)} 이거 아직 아는 사람 없을 때 먼저 담는 게 맞는 거 아니냐`],
-  (t)=>[t,`${nm(t)} 오늘 갑자기 거래량 터졌는데 이게 세력 신호 아니냐`],
-  (t)=>[t,`${nm(t)} 눌림목에서 추가 매수했음. 이 판단이 맞는 거냐`],
-  (t)=>[t,`${nm(t)} 목표가 역산하면 지금이 너무 싼 거 아니냐`],
-  (t)=>[t,`${nm(t)} 소문 돌기 전에 담는 게 맞는 거 아니냐 ㄹㅇ`],
-  (t)=>[t,`${nm(t)} 레이더에서 처음 발굴한 종목인데 이게 진짜냐 ㄷㄷ`],
-];
-
-// 존댓말 토론 스타일 (2/5 비중)
-const A_FORMAL = [
-  (t)=>[t,`${nm(t)} 지금 들어가도 괜찮을까요? 타이밍이 맞는지 궁금합니다`],
-  (t)=>[t,`${nm(t)} 오늘 거래량 보셨나요? 뭔가 심상치 않은 것 같은데요`],
-  (t)=>[t,`저도 ${nm(t)} 오늘 담았는데 잘 한 걸까요? 레이더 보고 결정했어요`],
-  (t)=>[t,`${nm(t)} 목표가까지 분할 매수 전략이 맞겠죠?`],
-  (t)=>[t,`${nm(t)} 추가 매수 고민 중인데 아직 저점 구간 맞죠?`],
-  (t)=>[t,`${nm(t)} 외인 수급 계속 들어오고 있는데 좋은 신호 맞죠?`],
-  (t)=>[t,`${nm(t)} 레이더에서 1위 찍혔을 때 바로 담았습니다. 기대가 큽니다`],
-  (t)=>[t,`${nm(t)} 단기로 볼지 장기로 볼지 고민인데 어떻게 생각하세요?`],
-  (t)=>[t,`${nm(t)} 분석 내용 다시 읽어봤는데 정말 근거가 탄탄하네요`],
-  (t)=>[t,`${nm(t)} 공시 나오기 전에 미리 담아놓는 게 맞겠죠?`],
-  (t)=>[t,`${nm(t)} 오늘 기관 순매수 확인했는데 계속 홀딩해도 될까요?`],
-  (t)=>[t,`${nm(t)} 수익 났습니다. 레이더 덕분이에요. 정말 감사해요`],
-  (t)=>[t,`${nm(t)} 이 가격에 살 수 있는 기회가 많지 않을 것 같아서 담았어요`],
-  (t)=>[t,`${nm(t)} 다들 어떻게 보고 계세요? 저는 장기 홀딩 생각 중이에요`],
-  (t)=>[t,`처음 ${nm(t)} 샀는데 레이더 분석 보고 결정했습니다. 잘 한 걸까요?`],
-  (t)=>[t,`${nm(t)} 목표가 달성 전엔 팔면 안 되겠죠?`],
-  (t)=>[t,`${nm(t)} 세력이 이 구간에서 모으고 있는 게 맞겠죠?`],
-  (t)=>[t,`${nm(t)} 오늘 양봉 나왔는데 이제 본격 상승 시작인 거 맞죠?`],
-  (t)=>[t,`${nm(t)} 레이더 찍은 종목은 다 올랐던데 이번에도 기대해도 될까요?`],
-  (t)=>[t,`${nm(t)} 아직 아는 분들이 많지 않을 때 먼저 들어가는 게 맞겠죠?`],
-];
+// ── Fragment 조합 엔진 (수백만 가지 고유 조합, 원문 그대로 노출 없음) ──
+const FR={
+  O:['야','아 진짜','솔직히','봐봐','근데','잠깐만','이야','헐','와','오','아니','야 잠깐','어 근데','이야 진짜','ㅋ 근데','아 씨','아니 이거','봐봐 이거','오늘 보니까','솔직히 말해서','뭔소리야','진짜','아니근데','잠깐','아니 이게','생각해보면','이 시간에','에이','가만보면','솔직히 ㄹㅇ','야 근데','어 잠깐','이야 근데','뭔가','아니 봐봐'],
+  OF:['솔직히','오늘 장 보니까','개인적인 생각인데요','한번 봐보시면','분석해 보니까','제 생각엔','사실은','아무래도','말씀드리면','참고로','저는','실은','어떻게 보면','찬찬히 보면','좀 더 보니까','지금 보니','가만 보니','솔직히 말하면','저도 보니까','여러모로','주봉 기준으로','일봉 보면','수급 보면','차트 보면','오늘 기준으로'],
+  S:[
+    t=>`${nm(t)} 지금 분위기 장난 아닌데`,t=>`${nm(t)} 거래량 터지기 시작했는데`,
+    t=>`${nm(t)} 차트가 너무 예쁘게 그려지고 있어`,t=>`${nm(t)} 이번엔 제대로 가는거 아닌가`,
+    t=>`${nm(t)} 지금 매집 신호 보이는데`,t=>`${nm(t)} 오늘 움직임이 심상치 않아`,
+    t=>`${nm(t)} 얼마전부터 선취매 들어온 것 같아`,t=>`${nm(t)} 주봉 보면 완전 예쁘게 그려지고 있는데`,
+    t=>`${nm(t)} 눌림목이 딱 지금이야`,t=>`${nm(t)} 세력이 조용히 모으는 것 같아`,
+    t=>`${nm(t)} RSI가 바닥 찍고 반등하는 중인데`,t=>`${nm(t)} 이게 진짜 가는 패턴이야`,
+    t=>`${nm(t)} 거래량 봐 진짜`,t=>`${nm(t)} 오늘 프로그램 순매수 들어왔는데`,
+    t=>`${nm(t)} 이번 눌림 길이가 딱 맞는 것 같아`,t=>`${nm(t)} 저항선 돌파 시도하는 것 같던데`,
+    t=>`${nm(t)} 지지선 위에서 탄탄하게 버티고 있어`,t=>`${nm(t)} 외인 수급이 들어오기 시작한 것 같아`,
+    t=>`${nm(t)} 이게 진짜 터지기 직전 패턴인데`,t=>`${nm(t)} 지금 눌림 주고 재상승하는 모습이야`,
+    t=>`${nm(t)} 기관이 사흘째 순매수 중이야`,t=>`${nm(t)} 5일선이랑 20일선 골든크로스 나오려는 것 같아`,
+    t=>`${nm(t)} 볼린저밴드 하단서 반등하는 거 보이냐`,t=>`${nm(t)} 오늘 시간외에서도 강하게 나왔잖아`,
+    t=>`${nm(t)} 이 가격대가 역사적 저점이야`,t=>`${nm(t)} 단기 파동 3파 시작점 같아`,
+    t=>`${nm(t)} 세력이 눌러놓고 모으는 패턴이야`,t=>`${nm(t)} 오늘 거래량이 전일 대비 3배야`,
+    t=>`${nm(t)} 외인이 연속 순매수 중인 거 봤냐`,t=>`${nm(t)} 지금 저점 높여가는 게 보이잖아`,
+    t=>`${nm(t)} 매도세가 완전히 줄어들고 있어`,t=>`${nm(t)} 이 가격에서 세력이 받아주고 있는 거야`,
+    t=>`${nm(t)} 오늘 공시 나오기 전에 움직임 있는 것 같아`,t=>`${nm(t)} 단기 모멘텀이 살아나고 있는 것 같아`,
+    t=>`${nm(t)} 이 패턴 작년에 2배 갔을 때랑 똑같아`,t=>`${nm(t)} 수급 보면 답 나와`,
+    t=>`${nm(t)} 기관+외인 동시 매수야 지금`,t=>`${nm(t)} 하루 이틀도 아니고 이 지지선 진짜야`,
+    t=>`${nm(t)} 장 끝나고 기관 대량 매수 들어왔던데`,t=>`${nm(t)} 소문 돌기 전에 담는 타이밍인 것 같아`,
+    t=>`${nm(t)} 이번 주 안에 뭔가 나올 것 같아`,t=>`${nm(t)} 아직 아는 사람 없을 때 먼저 담는 게 맞아`,
+    t=>`${nm(t)} 레이더에서 1위 찍혔을 때 바로 담음`,t=>`${nm(t)} 지금이 마지막 눌림인 것 같아`,
+    t=>`${nm(t)} 목표가까지 거리가 얼마 안 남은 것 같아`,
+  ],
+  SF:[
+    t=>`${nm(t)}이 지금 좋은 흐름을 보여주고 있어요`,t=>`${nm(t)} 거래량이 심상치 않더라고요`,
+    t=>`${nm(t)} 차트가 예쁘게 나오고 있어요`,t=>`${nm(t)} 매집 패턴이 보이는 것 같아요`,
+    t=>`${nm(t)} 오늘 움직임을 보면`,t=>`${nm(t)} 주봉 상으로 좋은 모양이에요`,
+    t=>`${nm(t)} 이번 눌림에서 세력이 받아주고 있는 것 같아요`,t=>`${nm(t)} 지지라인을 잘 지켜주고 있어서요`,
+    t=>`${nm(t)} 수급이 긍정적으로 바뀌고 있더라고요`,t=>`${nm(t)} 단기적으로 봐도 좋아 보여요`,
+    t=>`${nm(t)} 레이더에서 찍혔을 때 바로 담았는데요`,t=>`${nm(t)} 오늘 기관 순매수 확인했는데요`,
+    t=>`${nm(t)} 이 가격대에서 분할 매수 들어갔어요`,t=>`${nm(t)} 목표가까지 아직 여유 있어 보여요`,
+    t=>`${nm(t)} 외인 매수가 계속 들어오더라고요`,t=>`${nm(t)} 공시 나오기 전에 선매수한 것 같아요`,
+    t=>`${nm(t)} 차트랑 수급이 동시에 좋아지고 있어요`,t=>`${nm(t)} 볼린저밴드 하단 반등이더라고요`,
+    t=>`${nm(t)} RSI 과매도 구간에서 반등 중이에요`,t=>`${nm(t)} 5일선 위로 올라서려는 움직임이에요`,
+    t=>`${nm(t)} 저는 이 자리에서 들어갔는데요`,t=>`${nm(t)} 기관 사흘째 매수라는 게 포인트예요`,
+    t=>`${nm(t)} 단기 트레이딩으로 봐도 괜찮을 것 같아요`,t=>`${nm(t)} 지금 들어가기 늦은 건지 고민이에요`,
+    t=>`${nm(t)} 개인적으로 긍정적으로 보고 있어요`,
+  ],
+  B:['이 패턴이 전에 2배 뛰기 직전이랑 똑같아','거래량이 전일 대비 3배야 진짜로','RSI 30 이하 바닥 찍고 올라오는 거잖아',
+    '매도세가 점점 줄어들고 있잖아','이 가격대서 눌림 받고 가는 게 진짜 같아','하루 이틀 아닌데 이 지지선이',
+    '5일선이랑 20일선 골든크로스 나올 것 같은데','볼린저밴드 하단 반등이잖아 이게','이런 거래량이면 세력 개입 맞지',
+    '단기 파동으로 보면 3파 시작점 같아','개미들 탈 때가 된 것 같은데','이 정도 눌림이면 충분히 쉰 거 아닌가',
+    '지금 아니면 기회 없을 것 같은데','저점을 높여가는 게 보이잖아','지금 매수세가 점점 강해지고 있는데',
+    '오늘 시간외에서도 강하게 나왔잖아','외인이 이 가격대서 매수하고 있다는 게 포인트야','기관이 담고 있는 거 보이지 않냐',
+    '레이더 찍은 종목이 다 올랐잖아','지금 손절한 놈들 나중에 땅 친다','이 종목 한 달 뒤가 기대된다',
+    '지금 안 들어가면 나중에 후회함','단기로 10% 이상은 먹을 수 있어','이거 소문 나기 전에 담아야 해',
+    '레이더 없었으면 몰랐을 종목이야','오늘 수익 냈음 레이더 진짜네','들어간 지 3일 만에 10% 먹었음',
+    '목표가 달성 전엔 팔면 안 됨','존버하는 게 맞는 거 알겠더라','지금 추가 매수 고민 중임',
+    '평단 낮출 생각으로 눌림에 추가 담음','절반 익절하고 나머지 홀딩 중임','단기 목표가 달성됐음 장기 가져갈 것 같음',
+    '이 흐름이면 신고가도 가능하지 않나','전고점 돌파하면 진짜 날아가는 거 아니냐','이 자리서 손절하면 진짜 손해임',
+    '세력이 지금 눌러놓고 개미 털고 있는 거야','매집 완료되면 바로 터지는 거지','지금 조용한 게 더 무서운 거야',
+    '이런 움직임이 터지기 직전 신호잖아','차트가 너무 예쁘게 그려지고 있어','이 패턴 진짜 교과서적이야',
+    '수급이 바뀌고 있다는 게 중요해','지금 이 가격이 역사적 저점이야','공시 나오면 한 번에 터진다고 봐',
+    '뭔가 알고 있는 놈들이 먼저 담는 거야','레이더 분석 믿고 들어갔더니 맞았음','주봉 차트가 완전 이상적인 그림이야',
+    '공매도 세력이 물린 것 같은데 이거','숏 커버링 나오면 진짜 급등임','눌림 끝에 세력이 들어오는 패턴이야',
+    '이 가격에서 기관이 담으면 답 나온 거지','지금 매수하는 게 6개월 뒤에 웃는 거야','분기 실적 나오면 한 번 더 가는 거야',
+    '레이더 찍은 이후 차트 흐름이 완전 달라졌어'],
+  BF:['충분히 갈 수 있다고 생각해요','개인적으로는 긍정적으로 보고 있어요','세력들이 천천히 쌓고 있는 것 같더라고요',
+    '단기 트레이딩으로도 나쁘지 않아 보여요','지지라인 딱 잡아주고 있어서 좋아 보여요','조금씩 나눠서 들어가도 될 것 같아요',
+    '손절선 잘 지키면서 보면 괜찮을 것 같아요','이 정도면 리스크 대비 리워드가 좋아 보여요',
+    '중장기적으로 보면 지금이 저점일 수도 있어요','차트 흐름이 좋아지고 있어서 기대가 되네요',
+    '레이더 분석이 또 맞는 것 같아요','분할 매수로 접근하면 좋을 것 같아요',
+    '목표가까지 여유 있어 보여서 홀딩 중이에요','기관이 계속 담고 있으니 믿음이 가네요',
+    '단기 모멘텀이 살아있는 것 같아요','지금 가격이 매력적인 구간인 것 같아요',
+    '수급이 점점 좋아지고 있더라고요','이번 눌림에서 좋은 타이밍인 것 같아요',
+    '레이더 찍힌 이후로 계속 보고 있었어요','공시나 모멘텀 하나만 나오면 갈 것 같아요',
+    '이 흐름이라면 목표가 달성 가능해 보여요','무리하지 않고 소액으로 먼저 들어갔어요',
+    '지금은 관망하다 눌림 오면 들어갈 것 같아요','손절라인 잡고 들어가면 괜찮을 것 같아요',
+    '이 정도 거래량이면 세력 개입 맞겠죠','목표가 올리고 싶어질 만큼 좋은 흐름이에요',
+    '단기 수익 괜찮게 났어요 레이더 덕분이에요','레이더 포착 이후 차트가 계속 좋아지고 있네요',
+    '잘 지켜보다가 들어갈 타이밍 잡을게요','수익 실현하고 재진입할 타이밍인 것 같아요'],
+  C:['ㅋㅋ 내 생각','어떻게 봐?','두고 보자','아닌가ㅋㅋ','봐라 진짜','맞지?','말이되냐','뭔가 있어',
+    '조만간 터질 것 같음','지금 놓치면 후회할 듯','틀릴 수도 있는데','모르겠다 나는','함 봐봐',
+    '근데 나만 그렇게 보나','아 모르겠다','진짜 모르겠는데','뇌피셜이긴 한데','믿거나 말거나',
+    '뭔가 낌새가 있어','두 눈 부릅뜨고 봐라','진짜야 이거','일단 담았음','나는 확신해',
+    '이게 신호야','두고봐','가봅시다','고고','각이냐','맞냐?','ㄷㄷ','진심임','아닌가?',
+    '아 떨린다','이 자리다','확인해봐','느낌 온다','각이야','보면 알 거야','잘 봐봐',
+    '이번엔 진짜인 것 같아','결국 가더라고'],
+  CF:['인 것 같아요','하더라고요','좋을 것 같아요','이더라고요','네요','이네요','인가요?',
+    '어떻게 보세요?','봐도 될 것 같아요','있지 않을까요?','하는 것 같아요','인 것 같더라고요',
+    '이라고 생각해요','할 것 같아요','인 것 같습니다','하는 것 같습니다','어떻게 생각하세요?',
+    '괜찮아 보이더라고요','가능할 것 같아요','맞는 것 같아요','인 타이밍인 것 같아요','좋겠네요',
+    '이지 않을까요?','이라 생각해요','겠죠?'],
+  X:[
+    t=>`${nm(t)} 드디어 움직이기 시작하네 ㄷㄷ`,t=>`${nm(t)} ㅋㅋ 역시 레이더가 맞았네`,
+    t=>`${nm(t)} 오늘 거래량 미쳤다`,t=>`${nm(t)} 지금이 진짜 타이밍 같은데`,
+    t=>`${nm(t)} 이제 시작인 거 아닌가?`,t=>`${nm(t)} 드가자 ㄱㄱ`,
+    t=>`${nm(t)} 갔다 갔어`,t=>`${nm(t)} 와 진짜 가냐 ㄷㄷ`,
+    t=>`${nm(t)} 오 뭔가 있는데?`,t=>`${nm(t)} 눌림이 끝나가는 것 같아`,
+    t=>`${nm(t)} 아직 늦지 않았어`,t=>`${nm(t)} 이번엔 진짜다`,
+    t=>`${nm(t)} 세력이 나타났다`,t=>`${nm(t)} 거래량이 심상치 않음`,
+    t=>`${nm(t)} 가즈아아아`,t=>`${nm(t)} ㄷㄷ 진짜 가나?`,
+    t=>`${nm(t)} 역시나 ㅋㅋ`,t=>`${nm(t)} 레이더 다시 봤는데 맞았음`,
+    t=>`${nm(t)} 지금 강하게 오르고 있는데?`,t=>`${nm(t)} 오늘 하루 종일 봤는데 뭔가 있음`,
+    t=>`${nm(t)} 가는 중이야 진짜`,t=>`${nm(t)} 벌써 올랐네 ㅋㅋ`,
+    t=>`${nm(t)} 아 씨 더 살걸`,t=>`${nm(t)} 역시 레이더`,
+    t=>`${nm(t)} 와 대박이다`,t=>`${nm(t)} 지금 들어가도 되냐 ㄷㄷ`,
+    t=>`${nm(t)} 이미 늦은 거 아니냐`,t=>`${nm(t)} 어 뭐지 갑자기?`,
+    t=>`${nm(t)} 레이더 믿고 들어갔는데 맞았음`,t=>`${nm(t)} 오늘 수익 냈다 ㅋㅋ`,
+    t=>`${nm(t)} 와 진짜 정확하다`,t=>`${nm(t)} 단타로 먹었음 ㄱㄱ`,
+    t=>`${nm(t)} 목표가 달성함 레이더 최고`,t=>`${nm(t)} 이거 언제 공시 나오냐`,
+    t=>`${nm(t)} 조금 더 담을까`,t=>`${nm(t)} 아직 더 갈 것 같은데`,
+    t=>`${nm(t)} 진짜 탄탄하다 이거`,t=>`${nm(t)} 잘 모아뒀으면 좋겠다`,
+    t=>`${nm(t)} 이게 맞나 싶다`,t=>`${nm(t)} 존버중 ㅋㅋ`,
+  ],
+};
 
 const userQueue=[];
-const _usedTexts = new Set();
+const _usedTexts=new Set();
+function _pick(a){return a[Math.floor(Math.random()*a.length)];}
 
 function makeDynamic(retry){
-  retry = retry||0;
-  if(retry > 30){ _usedTexts.clear(); }
-  const t=T[Math.floor(Math.random()*T.length)];
-  const r=Math.random();
-  let result;
-  // 존댓말 40% | 반말토론 30% | 수급분석 12% | 급등예언 10% | 수익 5% | 극찬 3%
-  if     (r<0.40) result=A_FORMAL  [Math.floor(Math.random()*A_FORMAL.length)](t);
-  else if(r<0.70) result=A_DISCUSS [Math.floor(Math.random()*A_DISCUSS.length)](t);
-  else if(r<0.82) result=A_ANALYSIS[Math.floor(Math.random()*A_ANALYSIS.length)](t);
-  else if(r<0.92) result=A_PREDICT [Math.floor(Math.random()*A_PREDICT.length)](t);
-  else if(r<0.97) result=A_EXIT    [Math.floor(Math.random()*A_EXIT.length)](t);
-  else             result=A_PRAISE  [Math.floor(Math.random()*A_PRAISE.length)](t);
-  const key=result[0]+'|'+result[1];
-  if(_usedTexts.has(key)) return makeDynamic(retry+1);
-  _usedTexts.add(key);
-  return result;
+  retry=retry||0;
+  if(retry>40){_usedTexts.clear();}
+  const t=_pick(T);
+  const isFormal=Math.random()<0.38;
+  let text;
+  if(isFormal){
+    const sf=_pick(FR.SF)(t);
+    const r=Math.random();
+    if     (r<0.28) text=`${_pick(FR.OF)} ${sf} ${_pick(FR.BF)}${_pick(FR.CF)}`;
+    else if(r<0.55) text=`${sf} ${_pick(FR.BF)}${_pick(FR.CF)}`;
+    else if(r<0.78) text=`${_pick(FR.OF)} ${sf}${_pick(FR.CF)}`;
+    else             text=`${sf}${_pick(FR.CF)}`;
+  } else {
+    if(Math.random()<0.13){
+      text=_pick(FR.X)(t);
+    } else {
+      const s=_pick(FR.S)(t);
+      const r=Math.random();
+      if     (r<0.22) text=`${_pick(FR.O)} ${s} ${_pick(FR.B)} ${_pick(FR.C)}`;
+      else if(r<0.44) text=`${s} ${_pick(FR.B)} ${_pick(FR.C)}`;
+      else if(r<0.62) text=`${_pick(FR.O)} ${s} ${_pick(FR.B)}`;
+      else if(r<0.76) text=`${s} ${_pick(FR.B)}`;
+      else if(r<0.88) text=`${_pick(FR.O)} ${s} ${_pick(FR.C)}`;
+      else             text=`${_pick(FR.O)} ${s}`;
+    }
+  }
+  if(_usedTexts.has(text)) return makeDynamic(retry+1);
+  _usedTexts.add(text);
+  if(_usedTexts.size>3000){_usedTexts.delete(_usedTexts.values().next().value);}
+  return [t,text];
 }
 
 function addComment(){
@@ -768,7 +803,7 @@ function addComment(){
     div.className='cmt';
     div.innerHTML=`<div class="cmt-top"><span class="cmt-nick" style="color:#f0c000">${nick}</span></div><div class="cmt-text">${text}</div>`;
     feed.insertBefore(div,feed.firstChild);
-    if(feed.children.length>5){const last=feed.lastChild;last.classList.add('leaving');setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},440);}
+    if(feed.children.length>5){const last=feed.lastChild;last.classList.add('leaving');setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},400);}
     return;
   }
   const _d=makeDynamic();
@@ -781,7 +816,7 @@ function addComment(){
   if(feed.children.length>5){
     const last=feed.lastChild;
     last.classList.add('leaving');
-    setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},440);
+    setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},400);
   }
 }
 
@@ -857,6 +892,11 @@ textarea.winput{resize:none;min-height:90px;line-height:1.6}
     <button class="wmodal-close" onclick="closeWriteModal()">×</button>
     <div class="wmodal-title">커뮤니티</div>
 
+    <div class="wnotice">
+      <div class="wnotice-icon">!</div>
+      <div>종목 토론과 무관한 내용, 도배, 욕설 등은 운영 정책에 따라 <strong>자동 비공개</strong> 처리될 수 있습니다.</div>
+    </div>
+
     <div class="wfield">
       <label class="wlabel">닉네임</label>
       <input class="winput" id="wNick" type="text" placeholder="익명" value="익명" maxlength="12">
@@ -895,6 +935,215 @@ function submitWrite(){
 
 
 document.addEventListener('keydown', e => { if(e.key==='Escape') closeWriteModal(); });
+</script>
+
+<!-- ── BACKGROUND CANVAS ── -->
+<script>
+(function(){
+  const cv=document.createElement('canvas');
+  cv.id='bgCanvas';
+  document.body.prepend(cv);
+  const ctx=cv.getContext('2d');
+  const PI2=Math.PI*2;
+  let W,H;
+
+  function resize(){
+    W=cv.width=window.innerWidth;
+    H=cv.height=window.innerHeight;
+  }
+  window.addEventListener('resize',resize);
+  resize();
+
+  /* ── Particles ── */
+  const N=Math.min(90,Math.floor(W*H/9000));
+  const pts=Array.from({length:N},()=>({
+    x:Math.random()*W, y:Math.random()*H,
+    vx:(Math.random()-.5)*.38, vy:(Math.random()-.5)*.38,
+    r:Math.random()*1.4+.4,
+    ph:Math.random()*PI2, fr:.005+Math.random()*.014,
+    gold:Math.random()<.22,
+  }));
+
+  /* ── Data rain ── */
+  const RC='0123456789SCKTMGRTMRLN↑↓▲▼%$';
+  const COLS=Math.floor(W/16);
+  const drops=Array.from({length:COLS},(_,i)=>({x:i*16,y:-Math.random()*H,spd:.22+Math.random()*.35}));
+
+  /* ── Radar ── */
+  const RMAX=Math.min(W,H)*.44;
+  let sweep=0;
+
+  /* ── Blips ── */
+  const blips=[];
+  let blipT=600;
+
+  /* ── Pulse rings ── */
+  const pulses=[];
+  let pulseT=2500;
+
+  /* ── Scan line ── */
+  let scanY=-80, scanAlpha=0, scanDir=1;
+
+  let last=0;
+  function frame(ts){
+    const dt=Math.min(ts-last,50);
+    last=ts;
+
+    /* fade trail */
+    ctx.fillStyle='rgba(0,0,0,.055)';
+    ctx.fillRect(0,0,W,H);
+
+    const cx=W/2, cy=H/2;
+
+    /* ── data rain ── */
+    ctx.font='10px "JetBrains Mono",monospace';
+    ctx.textBaseline='top';
+    for(const d of drops){
+      ctx.fillStyle=`rgba(255,36,0,${.014+Math.random()*.022})`;
+      ctx.fillText(RC[Math.floor(Math.random()*RC.length)],d.x,d.y);
+      d.y+=d.spd;
+      if(d.y>H) d.y=-14;
+    }
+
+    /* ── radar rings ── */
+    for(let i=1;i<=5;i++){
+      ctx.strokeStyle=`rgba(255,36,0,${Math.max(.007,.05-i*.009)})`;
+      ctx.lineWidth=.6;
+      ctx.beginPath();
+      ctx.arc(cx,cy,RMAX*i/5,0,PI2);
+      ctx.stroke();
+    }
+    /* cross hair */
+    ctx.strokeStyle='rgba(255,36,0,.03)';
+    ctx.lineWidth=.5;
+    ctx.beginPath();ctx.moveTo(cx-RMAX,cy);ctx.lineTo(cx+RMAX,cy);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(cx,cy-RMAX);ctx.lineTo(cx,cy+RMAX);ctx.stroke();
+
+    /* ── sweep ── */
+    ctx.save();
+    ctx.translate(cx,cy);
+    for(let i=0;i<32;i++){
+      const a=sweep-i*.062;
+      ctx.fillStyle=`rgba(255,36,0,${(1-i/32)*.052})`;
+      ctx.beginPath();ctx.moveTo(0,0);
+      ctx.arc(0,0,RMAX,a,a+.062);
+      ctx.closePath();ctx.fill();
+    }
+    ctx.save();
+    ctx.shadowColor='#ff2400';ctx.shadowBlur=16;
+    ctx.strokeStyle='rgba(255,72,0,.9)';ctx.lineWidth=1.3;
+    ctx.beginPath();ctx.moveTo(0,0);
+    ctx.lineTo(Math.cos(sweep)*RMAX,Math.sin(sweep)*RMAX);
+    ctx.stroke();
+    /* center dot */
+    ctx.fillStyle='rgba(255,36,0,.7)';
+    ctx.beginPath();ctx.arc(0,0,3,0,PI2);ctx.fill();
+    ctx.restore();
+    ctx.restore();
+    sweep+=.011;
+
+    /* ── blips ── */
+    blipT-=dt;
+    if(blipT<=0){
+      blipT=900+Math.random()*2200;
+      const a=Math.random()*PI2, r=RMAX*(.15+Math.random()*.78);
+      blips.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,life:1,gold:Math.random()<.28});
+    }
+    for(let i=blips.length-1;i>=0;i--){
+      const b=blips[i];
+      b.life-=.011;
+      if(b.life<=0){blips.splice(i,1);continue;}
+      const rgb=b.gold?'240,192,0':'255,36,0';
+      ctx.save();
+      ctx.shadowColor=b.gold?'#f0c000':'#ff2400';
+      ctx.shadowBlur=18*b.life;
+      ctx.fillStyle=`rgba(${rgb},${b.life*.95})`;
+      ctx.beginPath();ctx.arc(b.x,b.y,2.8,0,PI2);ctx.fill();
+      /* ring around blip */
+      ctx.strokeStyle=`rgba(${rgb},${b.life*.35})`;
+      ctx.lineWidth=.8;
+      ctx.beginPath();ctx.arc(b.x,b.y,6+( 1-b.life)*12,0,PI2);ctx.stroke();
+      ctx.restore();
+    }
+
+    /* ── pulse rings ── */
+    pulseT-=dt;
+    if(pulseT<=0){
+      pulseT=2800+Math.random()*3500;
+      const a=Math.random()*PI2, r=RMAX*Math.random()*.65;
+      pulses.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,r:0,life:1});
+    }
+    for(let i=pulses.length-1;i>=0;i--){
+      const p=pulses[i];
+      p.r+=1.6;p.life-=.011;
+      if(p.life<=0){pulses.splice(i,1);continue;}
+      ctx.strokeStyle=`rgba(255,36,0,${p.life*.22})`;
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,PI2);ctx.stroke();
+    }
+
+    /* ── scan line ── */
+    scanY+=scanDir*0.55;
+    if(scanY>H+80){scanY=-80;scanAlpha=.06+Math.random()*.06;}
+    if(scanAlpha>0){
+      const sg=ctx.createLinearGradient(0,scanY-40,0,scanY+40);
+      sg.addColorStop(0,'rgba(255,36,0,0)');
+      sg.addColorStop(.5,`rgba(255,36,0,${scanAlpha})`);
+      sg.addColorStop(1,'rgba(255,36,0,0)');
+      ctx.fillStyle=sg;
+      ctx.fillRect(0,scanY-40,W,80);
+      scanAlpha*=.995;
+    }
+
+    /* ── particles ── */
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      p.ph+=p.fr;
+      const g=(Math.sin(p.ph)+1)/2;
+      const rgb=p.gold?'240,192,0':'255,36,0';
+      const hex=p.gold?'#f0c000':'#ff2400';
+      /* halo */
+      const gr=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r*14);
+      gr.addColorStop(0,`rgba(${rgb},${g*.18+.04})`);
+      gr.addColorStop(1,`rgba(${rgb},0)`);
+      ctx.fillStyle=gr;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r*14,0,PI2);ctx.fill();
+      /* core */
+      ctx.save();
+      ctx.shadowColor=hex;ctx.shadowBlur=5+g*7;
+      ctx.globalAlpha=.38+g*.62;
+      ctx.fillStyle=hex;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,PI2);ctx.fill();
+      ctx.restore();
+    }
+    ctx.globalAlpha=1;
+
+    /* ── connections ── */
+    const DIST2=14400; /* 120px */
+    for(let i=0;i<pts.length-1;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d2=dx*dx+dy*dy;
+        if(d2<DIST2){
+          ctx.strokeStyle=`rgba(255,36,0,${(1-Math.sqrt(d2)/120)*.11})`;
+          ctx.lineWidth=.5;
+          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();
+        }
+      }
+    }
+
+    /* ── vignette ── */
+    const vg=ctx.createRadialGradient(cx,cy,Math.min(W,H)*.28,cx,cy,Math.min(W,H)*.78);
+    vg.addColorStop(0,'rgba(0,0,0,0)');
+    vg.addColorStop(1,'rgba(0,0,0,.55)');
+    ctx.fillStyle=vg;
+    ctx.fillRect(0,0,W,H);
+
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
 </script>
 
 </body>
