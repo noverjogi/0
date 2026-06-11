@@ -673,6 +673,40 @@ const A_PRAISE = [
   (t)=>[t,'여기 분석 퀄리티가 유료 서비스보다 훨씬 낫습니다 ㄷㄷ'],
 ];
 
+// 종목 언급 토론 스타일 (티커 직접 포함)
+const A_DISCUSS = [
+  (t)=>[t,`${t} 지금 들어가도 될까요? 오늘 차트 보니까 눌린 것 같아서`],
+  (t)=>[t,`${t} 어제부터 거래량 터지던데 다들 보셨어요? 뭔가 있는 것 같음`],
+  (t)=>[t,`저도 ${t} 오늘 담았는데 잘 한 건지 ㅋㅋ 레이더 보고 결정함`],
+  (t)=>[t,`${t} 이 가격에 사면 후회 안 할 것 같은데 다들 어떻게 생각해요?`],
+  (t)=>[t,`${t} 목표가까지 아직 먼데 분할 매수 전략이 맞겠죠?`],
+  (t)=>[t,`${t} 외인 수급 보니까 뭔가 알고 있는 것 같음. 나도 따라 들어갈까`],
+  (t)=>[t,`${t} 레이더 1위 찍혔을 때 바로 샀음. 차트가 너무 예쁨 ㄷㄷ`],
+  (t)=>[t,`${t} 추가 매수 고민 중인데 아직 저점 구간 맞죠?`],
+  (t)=>[t,`${t} 단기로 볼 건지 장기로 볼 건지 고민됨. 다들 어떻게 해요?`],
+  (t)=>[t,`${t} 오늘 양봉 나왔음. 이제 본격 상승 시작 아닌가요`],
+  (t)=>[t,`${t} 호재 터지기 전에 미리 담아놓는 게 맞는 것 같음 ㄹㅇ`],
+  (t)=>[t,`${t} 이번 주 흐름 보면 세력이 확실히 들어온 것 같음. 같이 타야죠`],
+  (t)=>[t,`${t} 레이더 분석 보고 처음 알게 됐는데 진짜 저평가 맞는 것 같음`],
+  (t)=>[t,`${t} 공시 나오기 전에 담는 게 맞죠? 나오면 이미 늦을 것 같아서`],
+  (t)=>[t,`${t} 진짜 이 가격에 살 수 있는 마지막 기회 아닐까 싶음`],
+  (t)=>[t,`${t} 오늘 눌림목에서 추가 매수함. 평단 잘 잡은 것 같음 ㄱㄱ`],
+  (t)=>[t,`${t} 단기 모멘텀 살아있음. 이번 주 안에 뭔가 나올 것 같은 느낌`],
+  (t)=>[t,`${t} 목표가 역산하면 지금 가격이 너무 싼 거 느껴짐`],
+  (t)=>[t,`${t} 분석 다시 읽어봤는데 근거가 탄탄하네요. 더 담을 예정`],
+  (t)=>[t,`${t} 친구한테도 알려줬는데 같이 올라가면 좋겠음 ㅋㅋ`],
+  (t)=>[t,`${t} 지금 들어가는 게 늦은 건 아니죠? 아직 초입인 것 같아서`],
+  (t)=>[t,`${t} 세력이 이 가격에서 모으는 게 거래량에서 다 보임`],
+  (t)=>[t,`${t} 다들 얼마치 담으셨나요? 저는 오늘 좀 더 추가했음`],
+  (t)=>[t,`${t} 아직 아는 사람 많지 않을 때 먼저 들어가는 게 맞는 것 같음`],
+  (t)=>[t,`${t} 저 이거 처음 사는 건데 레이더 믿어도 되는 거죠? ㄷㄷ`],
+  (t)=>[t,`${t} 오늘 갑자기 거래량 터졌음. 이거 세력 신호 아님?`],
+  (t)=>[t,`${t} 지금 못 사면 다음엔 이 가격 못 볼 것 같음. 결국 담음`],
+  (t)=>[t,`${t} 장 끝나고 체결 보니까 기관 대량 매수 들어왔던데 ㄷㄷ`],
+  (t)=>[t,`${t} 목표가 달성 전에 팔면 바보겠죠? 그냥 홀딩함`],
+  (t)=>[t,`${t} 레이더에서 발굴한 종목 처음인데 진짜 느낌 좋음`],
+];
+
 const userQueue=[];
 const _usedTexts = new Set();
 
@@ -682,10 +716,11 @@ function makeDynamic(retry){
   const t=T[Math.floor(Math.random()*T.length)];
   const r=Math.random();
   let result;
-  // 수급/분석 30% | 급등예언 30% | 수익/탈출 20% | 극찬 20%
-  if     (r<0.30) result=A_ANALYSIS[Math.floor(Math.random()*A_ANALYSIS.length)](t);
-  else if(r<0.60) result=A_PREDICT [Math.floor(Math.random()*A_PREDICT.length)](t);
-  else if(r<0.80) result=A_EXIT    [Math.floor(Math.random()*A_EXIT.length)](t);
+  // 종목토론 60% | 수급분석 15% | 급등예언 12% | 수익 8% | 극찬 5%
+  if     (r<0.60) result=A_DISCUSS [Math.floor(Math.random()*A_DISCUSS.length)](t);
+  else if(r<0.75) result=A_ANALYSIS[Math.floor(Math.random()*A_ANALYSIS.length)](t);
+  else if(r<0.87) result=A_PREDICT [Math.floor(Math.random()*A_PREDICT.length)](t);
+  else if(r<0.95) result=A_EXIT    [Math.floor(Math.random()*A_EXIT.length)](t);
   else             result=A_PRAISE  [Math.floor(Math.random()*A_PRAISE.length)](t);
   const key=result[0]+'|'+result[1];
   if(_usedTexts.has(key)) return makeDynamic(retry+1);
