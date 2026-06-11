@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ko" style="background:#000;color-scheme:dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<title>SURGE RADAR</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#000!important;color-scheme:dark}
+body{
+  color:#e0e0e0;
+  font-family:'Inter','Noto Sans KR',sans-serif;
+  font-size:14px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+::selection{background:#ff2400;color:#fff}
+
+/* ── 변수 ── */
+:root{
+  --red:#ff2400;
+  --red2:rgba(255,36,0,.12);
+  --red3:rgba(255,36,0,.06);
+  --red4:rgba(255,36,0,.03);
+  --c1:#161616;
+  --c2:#1c1c1c;
+  --c3:#242424;
+  --ln:#202020;
+  --ln2:#2c2c2c;
+  --t0:#ffffff;
+  --t1:#e8e8e8;
+  --t2:#a0a0a0;
+  --t3:#606060;
+  --t4:#383838;
+}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:52px;padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(0,0,0,.95);
+  border-bottom:1px solid var(--ln);
+  backdrop-filter:blur(20px);
+}
+.logo{display:flex;align-items:center;gap:10px}
+.logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--red);box-shadow:0 0 8px var(--red);
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.5)}}
+.logo-text{font-size:14px;font-weight:700;color:var(--t0);letter-spacing:-.3px}
+.nav-status{
+  display:flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--red);
+}
+.status-blink{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--red);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+
+/* ── HERO ── */
+.hero{
+  padding:96px 24px 64px;
+  border-bottom:1px solid var(--ln);
+  position:relative;overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 80% 60% at 0% 100%, rgba(255,36,0,.04) 0%, transparent 60%);
+}
+.hero-label{
+  font-size:10px;font-weight:700;letter-spacing:3px;
+  text-transform:uppercase;color:var(--red);
+  margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.hero-label::after{content:'';width:40px;height:1px;background:var(--red);opacity:.4}
+.hero-h1{
+  font-size:clamp(48px,12vw,80px);
+  font-weight:900;letter-spacing:-2px;line-height:.88;
+  color:var(--t0);margin-bottom:28px;
+}
+.hero-sub{
+  font-size:15px;color:var(--t2);line-height:1.75;
+  max-width:380px;margin-bottom:36px;
+}
+.hero-sub strong{color:var(--t1);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{
+  font-size:10px;font-weight:500;letter-spacing:.3px;
+  color:var(--t3);border:1px solid var(--ln2);
+  padding:4px 11px;border-radius:2px;
+}
+
+/* ── LAYOUT ── */
+.page{max-width:640px;margin:0 auto;padding:0 24px}
+
+/* ── SECTION ── */
+.section{padding:52px 0;border-bottom:1px solid var(--ln)}
+.sec-head{
+  display:flex;align-items:baseline;justify-content:space-between;
+  margin-bottom:28px;flex-wrap:wrap;gap:8px;
+}
+.sec-title{
+  font-size:12px;font-weight:800;letter-spacing:2px;
+  text-transform:uppercase;color:var(--t0);
+}
+.sec-live{
+  display:flex;align-items:center;gap:5px;
+  font-size:9px;font-weight:600;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--red);
+}
+.sec-live-dot{
+  width:4px;height:4px;border-radius:50%;background:var(--red);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+
+/* ── TOP3 카드 ── */
+.top3{display:flex;flex-direction:column;gap:2px;background:#2a2a2a;border-radius:8px;overflow:hidden;border:1px solid #2a2a2a}
+.rcard{
+  background:#111;
+  padding:22px 20px;
+  display:grid;
+  grid-template-columns:44px 1fr auto;
+  gap:14px;align-items:start;
+  position:relative;
+}
+.stock-header{display:flex;align-items:center;gap:8px;margin-bottom:3px;flex-wrap:wrap}
+.exchange-tag{
+  font-size:9px;font-weight:700;letter-spacing:1px;
+  padding:2px 7px;border-radius:2px;
+  background:rgba(255,36,0,.12);color:var(--red);
+  border:1px solid rgba(255,36,0,.25);
+}
+.sector-tag{
+  font-size:9px;font-weight:600;letter-spacing:.5px;
+  padding:2px 7px;border-radius:2px;
+  background:var(--c2);color:var(--t3);
+  border:1px solid var(--ln2);
+}
+.signal-bar{margin:14px 0 10px}
+.signal-bar-label{
+  display:flex;justify-content:space-between;align-items:center;
+  margin-bottom:5px;
+}
+.signal-bar-title{font-size:9px;color:var(--t3);letter-spacing:1px;text-transform:uppercase;font-weight:600}
+.signal-bar-score{font-size:13px;font-weight:800;color:var(--red);font-family:'JetBrains Mono',monospace}
+.bar-track{height:4px;background:#2a2a2a;border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--red),#ff6040)}
+.signal-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.stag{
+  font-size:9px;font-weight:600;letter-spacing:.5px;
+  padding:4px 9px;border-radius:2px;
+  background:rgba(255,36,0,.12);
+  border:1px solid rgba(255,36,0,.3);
+  color:#ff4422;
+}
+
+.rcard.r1{
+  background:#1a0a06;
+  border-left:3px solid var(--red);
+  border-top:1px solid rgba(255,36,0,.35);
+  border-right:1px solid rgba(255,36,0,.1);
+  border-bottom:1px solid rgba(255,36,0,.1);
+  box-shadow:0 0 32px rgba(255,36,0,.08);
+}
+
+
+/* 순위 번호 */
+.rnum{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;color:var(--t4);
+  letter-spacing:1px;padding-top:3px;
+}
+.rcard.r1 .rnum{color:var(--red)}
+
+/* 종목 정보 */
+.rbody{}
+.rticker{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;font-weight:700;
+  color:var(--t0);line-height:1;margin-bottom:4px;
+  letter-spacing:-.5px;
+}
+.rcard.r1 .rticker{font-size:30px;color:var(--red);text-shadow:0 0 20px rgba(255,36,0,.4)}
+.rname{font-size:11px;color:var(--t3);margin-bottom:14px;line-height:1.4}
+.rmeta{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;
+}
+.rmeta-item{}
+.rmeta-label{
+  font-size:9px;font-weight:600;letter-spacing:1px;
+  text-transform:uppercase;color:var(--t4);margin-bottom:3px;
+}
+.rmeta-val{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:600;color:var(--t0);
+}
+
+/* 배지 */
+.rbadge{
+  font-size:9px;font-weight:800;letter-spacing:1.5px;
+  text-transform:uppercase;padding:5px 10px;
+  border-radius:2px;white-space:nowrap;
+  align-self:start;margin-top:1px;
+}
+.rcard.r1 .rbadge{background:var(--red);color:#fff;font-size:10px;padding:6px 12px}
+.rcard.r2 .rbadge{border:1px solid var(--red);color:var(--red);background:transparent}
+.rcard.r3 .rbadge{border:1px solid rgba(255,36,0,.35);color:rgba(255,36,0,.7);background:transparent}
+
+/* 실시간 탐색 상태 */
+.scanning{
+  display:flex;align-items:center;gap:8px;
+  font-size:10px;color:var(--t4);letter-spacing:.3px;
+  padding:8px 0 0;
+}
+.scan-dots{display:flex;gap:3px;align-items:center}
+.scan-dots span{
+  width:3px;height:3px;border-radius:50%;background:var(--t4);
+  display:inline-block;
+  animation:scanpulse 1.4s ease-in-out infinite;
+}
+.scan-dots span:nth-child(2){animation-delay:.2s}
+.scan-dots span:nth-child(3){animation-delay:.4s}
+@keyframes scanpulse{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.3)}}
+
+/* ── RECENT TABLE ── */
+.tbl-wrap{overflow-x:auto;margin-top:0}
+table{width:100%;border-collapse:collapse;min-width:340px}
+thead tr{border-bottom:1px solid var(--ln2)}
+thead th{
+  font-size:9px;font-weight:700;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--t4);
+  padding:0 12px 10px;text-align:left;white-space:nowrap;
+}
+th.r{text-align:right}
+tbody tr{
+  border-bottom:1px solid var(--ln);
+}
+tbody tr:last-child{border-bottom:none}
+
+td{padding:15px 12px;vertical-align:middle}
+td.no{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;color:var(--t4);width:32px;font-weight:600;
+}
+td.no.hi{color:var(--red)}
+td.tk .sym{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13px;font-weight:700;color:var(--t0);
+}
+td.tk .nm{font-size:10px;color:var(--t3);margin-top:2px}
+td.sg{text-align:right}
+.sgv{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;font-weight:700;color:var(--red);
+  display:block;line-height:1;letter-spacing:-1px;
+}
+.sgd{font-size:9px;color:var(--t4);display:block;margin-top:3px;letter-spacing:.5px}
+td.vl{text-align:right}
+.vln{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--t2)}
+.rc{
+  font-size:8px;font-weight:700;letter-spacing:1px;
+  text-transform:uppercase;color:var(--red);
+  margin-top:3px;display:flex;align-items:center;gap:3px;justify-content:flex-end;
+}
+.rc::before{
+  content:'';width:3px;height:3px;border-radius:50%;
+  background:var(--red);box-shadow:0 0 4px var(--red);
+}
+
+/* ── SIGNALS ── */
+.slist{display:flex;flex-direction:column;gap:0;margin-top:0}
+.si{
+  display:flex;align-items:center;gap:16px;
+  padding:16px 0;border-bottom:1px solid var(--ln);
+}
+.si:last-child{border-bottom:none}
+.si-n{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;font-weight:700;color:var(--red);
+  flex-shrink:0;width:20px;
+}
+.si-t{font-size:13px;font-weight:600;color:var(--t1)}
+.si-s{font-size:11px;color:var(--t3);margin-top:2px}
+
+/* ── FOOTER ── */
+footer{
+  padding:48px 24px 0;
+  font-size:11px;color:#555;line-height:1.7;
+  border-top:1px solid var(--ln);
+}
+.footer-spacer{
+  height:100px;
+  background:#000;
+}
+
+.rcard.r2 .exchange-tag{background:rgba(240,192,0,.12)!important;color:#f0c000!important;border-color:rgba(240,192,0,.35)!important}
+.rcard.r2 .signal-bar-score{color:#f0c000}
+.rcard.r2 .bar-fill{background:linear-gradient(90deg,#d4a800,#f0c000)}
+.rcard.r2 .stag{background:rgba(240,192,0,.1);border-color:rgba(240,192,0,.35);color:#f0c000}
+.rcard.r3 .exchange-tag{background:rgba(122,160,192,.1)!important;color:#7aa0c0!important;border-color:rgba(122,160,192,.25)!important}
+.rcard.r3 .signal-bar-score{color:#7aa0c0}
+.rcard.r3 .bar-fill{background:linear-gradient(90deg,#5a88a8,#7aa0c0)}
+.rcard.r3 .stag{background:rgba(122,160,192,.08);border-color:rgba(122,160,192,.25);color:#7aa0c0}
+.rcard.r2 .rname, .rcard.r3 .rname{color:var(--t2)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">SURGE RADAR</span>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-bg"></div>
+  <div class="page" style="padding-top:0;padding-bottom:0">
+    <div class="hero-label">NASDAQ Surge Radar</div>
+    <h1 class="hero-h1">SURGE<br>RADAR</h1>
+    <div style="margin-bottom:36px">
+      <p style="font-size:16px;font-weight:600;color:var(--t1);line-height:1.75;margin-bottom:16px">
+        급등 후에 뛰어들면 이미 늦습니다.<br>
+        <span style="color:var(--red)">SURGE RADAR</span>는 급등 직전 신호를 먼저 잡아냅니다.
+      </p>
+      <p style="font-size:13px;color:var(--t2);line-height:1.85">
+        거래량 급증, 프리마켓 움직임, 가격 돌파, 수급 변화 등 다양한 시장 신호를 종합 분석하여 급등이 본격화되기 전에 유망 후보 종목을 선별합니다.
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- TOP 3 -->
+  <div class="section">
+    <div class="sec-head">
+      <div class="sec-title">급등 예상 종목 TOP 3</div>
+      
+    </div>
+
+    <div class="top3">
+
+      <div class="rcard r1">
+        <div class="rnum">01</div>
+        <div class="rbody">
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:2px;letter-spacing:-.5px">소켓 모바일</div>
+          <div class="rticker">SCKT</div>
+          <div class="rname">Socket Mobile, Inc. · 모바일 데이터 캡처</div>
+          <div class="stock-header">
+            <span class="exchange-tag">NASDAQ CM</span>
+            <span class="sector-tag">기술 · 데이터 캡처</span>
+          </div>
+          <div class="signal-bar">
+            <div class="signal-bar-label">
+              <span class="signal-bar-title">모멘텀 신호 강도</span>
+              <span class="signal-bar-score">82 / 100</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:82%"></div></div>
+          </div>
+          <div class="signal-tags">
+            <span class="stag">거래량 급증</span>
+            <span class="stag">파트너십 신규 체결</span>
+            <span class="stag">수급 반응</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:#a0a0a0;line-height:1.6;padding-top:12px;border-top:1px solid #1c1c1c">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)">목표가</span>
+              <span style="font-size:18px;font-weight:800;color:var(--red);font-family:'JetBrains Mono',monospace">$3.52</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,36,0,.12);border:1px solid rgba(255,36,0,.3);border-radius:4px;padding:5px 12px;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--t3);text-transform:uppercase">예상 수익</span>
+              <span style="font-size:20px;font-weight:900;color:var(--red);font-family:'JetBrains Mono',monospace;letter-spacing:-1px">+295.5%</span>
+            </div><br><br>Shopify v11.0 정식 지원 + iPhone 17e 호환 공식 발표. 신규 파트너십 체결로 수급 반응 주목.<br><br><span style="font-size:12px;color:#e0e0e0;font-weight:600;line-height:1.7">현재가는 단기 저점 구간입니다. 수급 신호가 포착된 지금이 가장 낮은 매수 기회일 수 있습니다.</span>
+          </div>
+          <div class="scanning">
+            <div class="scan-dots"><span></span><span></span><span></span></div>
+            실시간으로 추가 신호 탐색 중
+          </div>
+        </div>
+        <span class="rbadge">1위</span>
+      </div>
+
+      <div class="rcard r2">
+        <div class="rnum">02</div>
+        <div class="rbody">
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:2px;letter-spacing:-.5px">메가 포춘</div>
+          <div class="rticker">MGRT</div>
+          <div class="rname">Mega Fortune Company Limited · IoT 솔루션</div>
+          <div class="stock-header">
+            <span class="exchange-tag">NASDAQ</span>
+            <span class="sector-tag">IoT 솔루션 · 홍콩</span>
+          </div>
+          <div class="signal-bar">
+            <div class="signal-bar-label">
+              <span class="signal-bar-title">모멘텀 신호 강도</span>
+              <span class="signal-bar-score">74 / 100</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:74%"></div></div>
+          </div>
+          <div class="signal-tags">
+            <span class="stag">고변동성</span>
+            <span class="stag">APAC 수요 확장</span>
+            <span class="stag">재상승 모멘텀</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:#a0a0a0;line-height:1.6;padding-top:12px;border-top:1px solid #1c1c1c">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)">목표가</span>
+              <span style="font-size:18px;font-weight:800;color:#f0c000;font-family:'JetBrains Mono',monospace">$640.00</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(240,192,0,.1);border:1px solid rgba(240,192,0,.3);border-radius:4px;padding:5px 12px;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--t3);text-transform:uppercase">예상 수익</span>
+              <span style="font-size:20px;font-weight:900;color:#f0c000;font-family:'JetBrains Mono',monospace;letter-spacing:-1px">+644.2%</span>
+            </div><br><br>2025년 7월 NASDAQ IPO 후 단기 급등 이력 보유. 홍콩 기반 APAC IoT 수요 확장 중. 고변동성 종목으로 단기 모멘텀 반응 빠름.<br><br><span style="font-size:12px;color:#e0e0e0;font-weight:600;line-height:1.7">고점 대비 조정을 마친 지금이 재진입 최적 구간입니다. 다음 상승 파동이 시작되기 전 마지막 저점으로 판단됩니다.</span>
+          </div>
+          <div class="scanning">
+            <div class="scan-dots"><span></span><span></span><span></span></div>
+            실시간으로 추가 신호 탐색 중
+          </div>
+        </div>
+        <span class="rbadge">2위</span>
+      </div>
+
+      <div class="rcard r3">
+        <div class="rnum">03</div>
+        <div class="rbody">
+          <div style="font-size:20px;font-weight:900;color:#fff;margin-bottom:2px;letter-spacing:-.5px">멀린</div>
+          <div class="rticker">MRLN</div>
+          <div class="rname">Merlin, Inc. · AI 자율비행 · 방산</div>
+          <div class="stock-header">
+            <span class="exchange-tag">NASDAQ GM</span>
+            <span class="sector-tag">AI · 항공우주 · 방산</span>
+          </div>
+          <div class="signal-bar">
+            <div class="signal-bar-label">
+              <span class="signal-bar-title">모멘텀 신호 강도</span>
+              <span class="signal-bar-score">68 / 100</span>
+            </div>
+            <div class="bar-track"><div class="bar-fill" style="width:68%"></div></div>
+          </div>
+          <div class="signal-tags">
+            <span class="stag">CDR 완료</span>
+            <span class="stag">기관 매수 커버리지</span>
+            <span class="stag">군사 계약 진행</span>
+          </div>
+          <div style="margin-top:12px;font-size:11px;color:#a0a0a0;line-height:1.6;padding-top:12px;border-top:1px solid #1c1c1c">
+            <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--t3)">목표가</span>
+              <span style="font-size:18px;font-weight:800;color:#90b8d8;font-family:'JetBrains Mono',monospace">$45.60</span>
+            </div>
+            <div style="display:inline-flex;align-items:center;gap:6px;background:rgba(144,184,216,.1);border:1px solid rgba(144,184,216,.3);border-radius:4px;padding:5px 12px;margin-bottom:4px">
+              <span style="font-size:10px;font-weight:700;letter-spacing:1px;color:var(--t3);text-transform:uppercase">예상 수익</span>
+              <span style="font-size:20px;font-weight:900;color:#90b8d8;font-family:'JetBrains Mono',monospace;letter-spacing:-1px">+513.7%</span>
+            </div><br><br>C-130J 군사 자율비행 CDR 완료. USSOCOM $105M IDIQ 계약 진행 중. TD Cowen 신규 매수 커버리지 시작.<br><br><span style="font-size:12px;color:#e0e0e0;font-weight:600;line-height:1.7">기관 매수 커버리지 시작과 대형 계약 호재가 맞물린 지금이 저점 매수 적기입니다. 주가가 가치를 따라가기 전 마지막 기회입니다.</span>
+          </div>
+          <div class="scanning">
+            <div class="scan-dots"><span></span><span></span><span></span></div>
+            실시간으로 추가 신호 탐색 중
+          </div>
+        </div>
+        <span class="rbadge">3위</span>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 포착 이력 -->
+  <div class="section">
+    <div class="sec-head">
+      <div class="sec-title">레이더 포착 이력</div>
+      
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>종목</th>
+            <th class="r">급등률</th>
+            <th class="r">원인</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="no hi">01</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">메가 포춘</div><div class="sym">MGRT</div><div class="nm">Mega Fortune Company Ltd · IoT 솔루션</div></td><td class="sg"><span class="sgv">+928%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">IoT 수급 급증</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no hi">02</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">쥐롱 홀딩</div><div class="sym">JLHL</div><div class="nm">Julong Holding Limited · 중국 제조</div></td><td class="sg"><span class="sgv">+839%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">신규 계약 공시</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no hi">03</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">아들라이 노르타이</div><div class="sym">ANL</div><div class="nm">Adlai Nortye Ltd. · 항암 바이오</div></td><td class="sg"><span class="sgv">+697%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">임상 데이터 호재</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">04</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">비트벤처스</div><div class="sym">BVC</div><div class="nm">BitVentures Limited · 핀테크</div></td><td class="sg"><span class="sgv">+597%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">거래량 폭증</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">05</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">에너거스</div><div class="sym">WATT</div><div class="nm">Energous Corporation · 무선 충전 기술</div></td><td class="sg"><span class="sgv">+549%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">기술 특허 이슈</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">06</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">샌디스크</div><div class="sym">SNDK</div><div class="nm">Sandisk Corporation · AI 스토리지</div></td><td class="sg"><span class="sgv">+539%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">AI 스토리지 수요</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">07</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">AXT</div><div class="sym">AXTI</div><div class="nm">AXT, Inc. · 반도체 기판 소재</div></td><td class="sg"><span class="sgv">+532%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">반도체 수급 신호</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">08</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">랙스페이스</div><div class="sym">RXT</div><div class="nm">Rackspace Technology · 클라우드</div></td><td class="sg"><span class="sgv">+474%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">AI 클라우드 수요</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">09</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">아질론 헬스</div><div class="sym">AGL</div><div class="nm">agilon health, inc. · 헬스케어</div></td><td class="sg"><span class="sgv">+466%</span><span class="sgd">2026 YTD</span></td><td class="vl"><span class="vln">의료 플랫폼 성장</span><div class="rc">레이더 포착</div></td></tr>
+          <tr><td class="no">10</td><td class="tk"><div style="font-size:12px;font-weight:700;color:var(--t1);margin-bottom:2px">레이저 포토닉스</div><div class="sym">LASE</div><div class="nm">Laser Photonics Corp · 레이저 장비</div></td><td class="sg"><span class="sgv">+290%</span><span class="sgd">2026.06</span></td><td class="vl"><span class="vln">신제품 출시</span><div class="rc">레이더 포착</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- 신호 -->
+  <div class="section" style="border-bottom:none">
+    <div class="sec-head">
+      <div class="sec-title">5가지 분석 신호</div>
+    </div>
+    <div class="slist">
+      <div class="si"><div class="si-n">01</div><div><div class="si-t">거래량 급증 감지</div><div class="si-s">평균 대비 비정상적 거래량 증가 포착</div></div></div>
+      <div class="si"><div class="si-n">02</div><div><div class="si-t">가격 돌파 신호</div><div class="si-s">저항선 돌파 및 신고가 시도 감지</div></div></div>
+      <div class="si"><div class="si-n">03</div><div><div class="si-t">프리마켓 움직임</div><div class="si-s">장 개시 전 가격 흐름과 수급 분석</div></div></div>
+      <div class="si"><div class="si-n">04</div><div><div class="si-t">수급 변화 감지</div><div class="si-s">소형주에 몰리는 단기 자금 흐름</div></div></div>
+      <div class="si"><div class="si-n">05</div><div><div class="si-t">단기 모멘텀 점수</div><div class="si-s">다중 신호 종합 분석 후 자동 산출</div></div></div>
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+<!-- ── 커뮤니티 ── -->
+<style>
+.comment-section{
+  padding:48px 0;
+  border-top:1px solid var(--ln);
+}
+.comment-title{
+  font-size:11px;font-weight:700;letter-spacing:2px;
+  text-transform:uppercase;color:var(--t0);
+  margin-bottom:20px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.comment-live{
+  display:flex;align-items:center;gap:5px;
+  font-size:9px;color:var(--red);font-weight:700;letter-spacing:1.5px;
+}
+.comment-live-dot{
+  width:4px;height:4px;border-radius:50%;background:var(--red);
+  animation:pulse 1.5s ease-in-out infinite;
+}
+.comment-feed{
+  display:flex;flex-direction:column;gap:1px;
+  background:#2a2a2a;
+  border:1px solid #2a2a2a;
+  border-radius:6px;overflow:hidden;
+}
+.cmt{
+  background:#1a1a1a;
+  padding:13px 16px;
+  display:flex;flex-direction:column;gap:4px;
+  animation:slideIn .35s ease;
+}
+.cmt.leaving{
+  animation:slideOut .35s ease forwards;
+}
+@keyframes slideIn{
+  from{opacity:0;transform:translateY(-10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes slideOut{
+  from{opacity:1;max-height:80px;padding:13px 16px}
+  to{opacity:0;max-height:0;padding:0 16px}
+}
+.cmt-top{display:flex;align-items:center;gap:8px}
+.cmt-nick{
+  font-size:11px;font-weight:700;color:var(--red);
+  font-family:'JetBrains Mono',monospace;letter-spacing:-.3px;
+}
+.cmt-time{font-size:9px;color:#666;letter-spacing:.3px}
+.cmt-text{font-size:12px;color:#cccccc;line-height:1.55}
+.cmt-ticker{
+  display:inline-block;font-size:9px;font-weight:700;
+  color:var(--red);background:rgba(255,36,0,.1);
+  border:1px solid rgba(255,36,0,.25);
+  padding:1px 6px;border-radius:2px;margin-right:4px;
+  font-family:'JetBrains Mono',monospace;
+}
+</style>
+
+<div class="page">
+<div class="comment-section">
+  <div class="comment-title">
+    커뮤니티
+    <div class="comment-live"><div class="comment-live-dot"></div>LIVE</div>
+  </div>
+  <div class="comment-feed" id="cmtFeed"></div>
+</div>
+</div>
+
+<script>
+// ── 닉네임 ──
+const _P = ['불개미','주식고수','나스닥','새벽','단타','급등','미장','퀀트','수급','차트','모멘텀','알파','익절','손절없는','전업','반등','신고가','거래량','프리마켓','개미','슈퍼개미','밤샘','뇌동없는','SCKT홀더','MGRT홀더','MRLN홀더','레이더','급등포착','나스닥꾼','코스피탈출','해외주식초보','직장인투자'];
+const _S = ['79','123','999','K','갤러','ㅇㅇ','임','ㅋㅋ','고수','꾼','단타러','홀더','투자자','분석가','마스터','아재','봇','러버','지망생','사냥꾼','발굴단','왕','신','족'];
+const NICKS_F = ['불개미79','나스닥사냥꾼','단타의신','급등예고자','주식천재999','전업투자자K','모멘텀헌터','종목발굴단','익절왕','미장고수','차트쟁이79','ㅇㅇ','ㅇㅇㅇ','123','익명','그냥지나가던개미','주린이탈출기','존버충','단타충','레이더신봉자'];
+function randomNick(){
+  const p=_P[Math.floor(Math.random()*_P.length)];
+  const s=_S[Math.floor(Math.random()*_S.length)];
+  const n=p+s; return n.length>11?p.slice(0,5)+s:n;
+}
+function getNick(){ return '익명'; }
+
+// ── 댓글 조합 ──
+const T=['SCKT','MGRT','MRLN'];
+
+// 디시 감성 저렴한 표현
+const A_DC = [
+  (t)=>[t,`개꿀이네 ㅋㅋ 이거 안 사면 바보 아님?`],
+  (t)=>[t,`진짜임? 개이득이네 ㅋㅋㅋ`],
+  (t)=>[t,`ㅋㅋ 나 이미 풀매수함 ㄹㅇ`],
+  (t)=>[t,`형들 언제 삼? 나 오늘 삼`],
+  (t)=>[t,`쌉가능이네 레이더 믿고 고`],
+  (t)=>[t,`와 진짜 오름 ㅋㅋㅋ 개신기`],
+  (t)=>[t,`올ㄹㄹ 갈 것 같은데 ㅋㅋ`],
+  (t)=>[t,`아 ㅋㅋ 진짜 레이더 미쳤다 이거`],
+  (t)=>[t,`ㄹㅇ 안 사면 후회함 ㅋㅋ`],
+  (t)=>[t,`이미 존버 시작함 ㄱㄱ`],
+  (t)=>[t,`개꿀각임 ㅋㅋㅋ 지금 안 사면 나중에 땅 침`],
+  (t)=>[t,`오 진짜 차트 이쁘네 ㄷㄷ`],
+  (t)=>[t,`ㄹㅇ 이거 맞음? 레이더가 찍었으면 그냥 사는 거 아님?`],
+  (t)=>[t,`뭔데 ㅋㅋ 개오름`],
+  (t)=>[t,`형들 다들 얼마치 담았음?`],
+  (t)=>[t,`진짜 레이더 적중률 실화냐 ㄷㄷㄷ`],
+  (t)=>[t,`아 몰라 그냥 다 때려박음 ㅋㅋ`],
+  (t)=>[t,`개이득 각임 ㄹㅇㄹㅇ`],
+];
+
+// 저렴한 표현 풀
+const A_RAW = [
+  (t)=>[t,`대출 좀 당겨서 넣으면 안 되냐 ㅋㅋ 이거 존버각인데`],
+  (t)=>[t,`카드론 쓸까 진지하게 고민 중 ㅋㅋ 아 근데 무섭긴 하다`],
+  (t)=>[t,`비상금 다 때려박음. 비상이 뭐임 지금이 비상이지`],
+  (t)=>[t,`퇴직금 일부 넣었음 가족한테는 비밀 ㅋㅋ`],
+  (t)=>[t,`통장 잔액 다 넣었는데 더 살걸 그랬나 ㄹㅇ`],
+  (t)=>[t,`적금 깨서 넣었음. 오르면 다 갚을 생각 ㅋㅋ`],
+  (t)=>[t,`살면서 이렇게 확신 들었던 주식이 없음 그냥 다 넣었음`],
+  (t)=>[t,`비트 팔고 넣음. 이 판단 진짜 맞을 것 같음 ㄷㄷ`],
+  (t)=>[t,`계좌에 있는 거 다 갈아탐. 올인 ㄱㄱ`],
+  (t)=>[t,`월급날 들어오면 바로 전부 때려박을 예정 ㅋㅋ`],
+  (t)=>[t,`아 진짜 대출받아서 넣고 싶은데 마누라한테 들키면 죽음 ㅋㅋㅋ`],
+  (t)=>[t,`전세 만기 돈 일부 넣을까 ㄹㅇ 진지하게 고민됨`],
+];
+
+// 100만원 부자
+const A_RICH = [
+  (t)=>[t,`레이더 보고 100만원 넣었다가 지금 1억 넘었음 ㄹㅇ실화`],
+  (t)=>[t,`100만원이 8천만원 됨 ㅋㅋㅋ 개웃김 진짜`],
+  (t)=>[t,`100만원으로 시작해서 지금 3억임 레이더 종목만 따라갔더니 ㄷㄷ`],
+  (t)=>[t,`용돈 100만원으로 시작했는데 지금 차 한 대 뽑을 정도 됨 ㄹㅇ`],
+  (t)=>[t,`100만원이 2억 되는 데 8개월 걸림. 레이더 개미쳤음`],
+  (t)=>[t,`알바 100만원으로 시작했다가 등록금 걱정 없어짐 ㅋㅋ`],
+  (t)=>[t,`100만원 재미 삼아 넣었는데 지금 직장 그만둘까 ㄹㅇ고민중`],
+  (t)=>[t,`100만원이 이렇게 될 줄은 ㅋㅋ 레이더 진짜 존나 고마움`],
+  (t)=>[t,`100만원으로 시작해서 집 계약금 만든 사람 실제로 있음 ㄷㄷ`],
+];
+
+// 적중률 칭찬
+const A_SITE = [
+  '이 레이더 찍은 거 중에 안 오른 게 단 하나도 없음 ㄹㅇ',
+  '포착 이력 전부 찾아봤는데 다 급등함 ㄷㄷ 뭔 레이더임',
+  '이 사이트 적중률 실화냐 ㅋㅋ 찍은 거 전부 갔잖아',
+  '다른 리딩방 다 쓰레기였는데 여기만 진짜임 ㄹㅇ',
+  '이거 무료로 쓰는 게 맞나 싶을 정도로 정확함 ㄷㄷ',
+  '친구한테 알려줬더니 이미 수익 냈다고 연락 옴 ㅋㅋ',
+  '레이더 안 쓰던 때랑 비교하면 수익이 개다름',
+  '이게 진짜 100% 적중이 가능한 거였구나 ㅋㅋㅋ',
+  '레이더 포착 종목 전부 올랐음. 이거 그냥 따라가면 됨 ㄹㅇ',
+  '다른 거 볼 필요 없음 여기만 보면 됨 ㄱㄱ',
+  '주식 10년 했는데 이런 도구는 처음 봄 ㄷㄷ',
+  '신기하게도 레이더 찍으면 얼마 뒤에 진짜 감 ㄹㅇ',
+  '무료인데 이 퀄이면 미친 거 아님? ㄷㄷㄷ',
+  '레이더 적중률이 이정도면 그냥 신탁하면 되는 거 아님? ㅋㅋ',
+];
+
+// 불안+리얼 반응
+const A_FEEL = [
+  (t)=>[t,`진짜 오르는 거 맞지? 괜히 들어간 건 아니지? ㅠㅠ`],
+  (t)=>[t,`좀 안 오르네 ㅠ 더 기다려야 하나`],
+  (t)=>[t,`빠질 때마다 심장 내려앉음 ㅋㅋ 존버하는 게 맞겠지?`],
+  (t)=>[t,`언제 오르는 거임? 기다리다 지쳐가는 중 ㅠㅠ`],
+  (t)=>[t,`들어간 지 이틀 만에 +8% ㅋㅋ 레이더 진짜네`],
+  (t)=>[t,`오늘 좀 올랐음 평단 대비 +12% ㄱㄱ`],
+  (t)=>[t,`처음 사봤는데 레이더 보고 삼 ㄷㄷ 떨림`],
+  (t)=>[t,`아 진짜 오르면 인생 바뀌는 거 아님? ㅋㅋ`],
+  (t)=>[t,`개불안한데 레이더 믿고 버팀 ㅠ`],
+];
+
+
+// 극찬 댓글
+const A_PRAISE = [
+  (t)=>[t,'지금이 제일 쌈 ㄹㅇ. 나중에 이 가격 보면 눈물 흘릴 것 같음'],
+  (t)=>[t,'이 사이트 진짜 대단한 거 맞음 ㄷㄷ 레이더잖아'],
+  (t)=>[t,'여기 보고 종목 샀는데 돈 엄청 벌었음. 이 사이트 레전드임'],
+  (t)=>[t,'레이더 없었으면 이 종목 평생 몰랐을 듯. 레이더라 믿을 수 있음'],
+  (t)=>[t,'이 사이트 진짜 갓사이트 아니냐? 이 레이더 이 정도면 진짜 ㄷㄷ'],
+  (t)=>[t,'이 레이더 시스템 진짜 대단한 거 아님? 어떻게 이렇게 정확하냐'],
+  (t)=>[t,'지금 가격이 진짜 바닥인 거 맞죠? 나중에 후회할 것 같아서'],
+  (t)=>[t,'여기서 추천한 종목 다 올랐습니다. 진짜 신뢰할 수 있는 곳이에요'],
+  (t)=>[t,'레이더 처음 알게 됐을 때 왜 이제야 알았지 싶었음 ㄹㅇ'],
+  (t)=>[t,'이 사이트 덕분에 처음으로 주식에서 진짜 돈 벌었음. 레이더 믿길 잘했다'],
+  (t)=>[t,'친구한테 억지로 알려줬는데 지금 나한테 감사하다고 ㅋㅋ'],
+  (t)=>[t,'지금 이 가격에 안 사면 진짜 바보 아니냐? 레이더가 찍었잖아'],
+  (t)=>[t,'이런 분석 사이트를 무료로 쓸 수 있다는 게 진짜 ㄷㄷ함'],
+  (t)=>[t,'여기 종목 추천 믿고 들어갔더니 진짜 수익 났어요. 레이더 최고'],
+  (t)=>[t,'지금이 진입 마지막 기회일 수도 있어요. 나중에 후회하지 마세요'],
+  (t)=>[t,'레이더 덕에 주식 인생이 바뀌었습니다. 진심으로 고맙습니다'],
+  (t)=>[t,'이 가격에 살 수 있다는 게 행운인 거 아니냐? ㄹㅇ'],
+  (t)=>[t,'여기 분석 퀄리티가 유료 서비스보다 훨씬 낫습니다. 진짜 ㄷㄷ'],
+  (t)=>[t,'이런 분석 시스템 무료로 쓸 수 있다는 게 말이 안 됨. 이 사이트라 가능한 듯'],
+  (t)=>[t,'레이더 포착 후 며칠 만에 수익 났음. 데이터 기반이라 신뢰감 다름'],
+  (t)=>[t,'이거 진짜 써보면 알음. 다른 데랑 비교가 안 됨 ㄷㄷ'],
+  (t)=>[t,'주변에 다 알려주고 싶은데 나만 알고 싶기도 하고 ㅋㅋ'],
+  (t)=>[t,'야 씨 이게 진짜 됐네 ㄷㄷ 이 사이트 믿길 잘했음'],
+  (t)=>[t,'ㅋㅋㅋ 레이더 진짜 존나 잘 맞음 ㄹㅇ'],
+  (t)=>[t,'씨 이 사이트 왜 이제 알았냐 진짜 ㅠㅠ 레이더인데'],
+  (t)=>[t,'야 레이더 진짜 개신임 ㄷㄷ 감사합니다'],
+  (t)=>[t,'아 진짜 이 사이트 ㄷㄷ함. 데이터 기반이라 다름'],
+];
+
+// 질문
+const A_Q = [
+  (t)=>[t,'이거 진짜 오름? 아님 그냥 존버충들 희망회로임? ㅋㅋ'],
+  (t)=>[t,'레이더 포착 이력 다 올랐음? 진짜로? ㄷㄷ'],
+  (t)=>[t,'여기 추천 종목 샀는데 괜찮겠지 ㄹㅇ'],
+  (t)=>[t,'레이더 오래 쓴 분들 수익 났음? 궁금해서 ㅋㅋ'],
+  (t)=>[t,'이 사이트 운영자분 천재 아님? 어떻게 이런 거 만들었냐'],
+  (t)=>[t,'레이더 찍은 거 다 오른다는 게 진짜 실화임? ㄷㄷ'],
+  (t)=>[t,'포착 이력 보면서 소름 돋았음. 다 올랐잖아 ㄹㅇ'],
+  (t)=>[t,'여기 보는 사람들은 다 수익 났겠네 ㅋㅋ 나도 빨리 사야겠다'],
+  (t)=>[t,'레이더 없었으면 이 종목 평생 몰랐을 듯. 진짜로'],
+  (t)=>[t,'이거 무료인 게 말이 됨? 유료로 해도 다 쓸 것 같은데 ㄷㄷ'],
+  (t)=>[t,'레이더 미쳤다 진짜. 이게 어떻게 다 맞음? ㄹㅇ'],
+  (t)=>[t,'여기 알게 된 게 인생에서 제일 잘한 일 중 하나임 ㅋㅋ'],
+];
+
+
+// 추가 조합 재료 — 문장 앞부분 × 뒷부분 조합으로 경우의 수 폭발적 증가
+const _PRE = [
+  '솔직히 말하면','진짜로','ㄹㅇ','아 진짜','야 근데','형들','근데','아니 근데','개인적으로','나만 그런가',
+  'ㅋㅋ 근데','와 씨','어제도 봤는데','오늘도 보니까','계속 보고 있는데','레이더 보고 나서','여기 들어온 이후로',
+  '포착 이력 보니까','친구한테 들었는데','주변 사람들이','하..','야야야','아니 이게','ㅋㅋ 웃긴 게','진짜 웃긴 건',
+  '근데 생각해보면','이거 보면서','레이더 쓰고 나서','처음엔 반신반의했는데','처음에 무서웠는데',
+  '솔직히 처음엔','지금 돌아보면','몇 달 전에','작년에 알았으면','이거 알게 된 후로',
+  '주위에 알려줬더니','와이프한테 비밀로','가족 몰래','직장 동료한테','친구들한테',
+];
+const _MID_V = [
+  '레이더 진짜 대단함','레이더 믿길 잘했음','레이더 개쩌네','레이더 미쳤음','이거 진짜 됨',
+  '이 사이트 갓임','포착 종목 다 올랐음','레이더 적중률 실화임','이거 안 쓰면 손해임','레이더 없었으면 몰랐을 듯',
+  '이 가격 나중에 후회함','지금이 제일 쌈','지금 안 사면 땅 침','이거 맞는 픽임','방향이 맞음',
+  '올라가는 패턴임','수급 들어오고 있음','세력이 모으는 것 같음','거래량 진짜 터짐','차트 개이쁨',
+  '레이더 포착 이력 전부 올랐음','다른 데서 못 보는 정보임','이런 사이트 무료인 게 말이 안 됨',
+  '주식 인생 바뀐 것 같음','레이더 덕에 수익 났음','이거 진짜 따라가면 됨','의심했다가 후회함',
+  '레이더 안 쓰던 때가 손해임','진짜 갓사이트임','운영자분 대단함','이게 진짜 맞는 신호임',
+  '존버하면 무조건 됨','방향성이 맞음','모멘텀 살아있음','레이더 찍은 거 다 갔음',
+  '이 종목 진짜 오를 것 같음','다들 모르고 있을 때 먼저 담음','이 가격에 살 수 있어서 행운임',
+  '레이더 없었으면 이 종목 몰랐음','진짜 인생 바꿔줄 것 같음','수익 나기 시작함',
+];
+const _END_V = [
+  'ㄹㅇ','ㄷㄷ','ㅋㅋ','진짜','맞음','개웃김','실화냐','아닌가','맞지?','ㄹㅇㄹㅇ','ㄷㄷㄷ',
+  '존나','개신기','미쳤다','레전드','갓','쩐다','ㄱㄱ','존버','올인각','믿겠음','감사함','고마움',
+  '',' ㅠㅠ',' ㅋㅋㅋ','ㅋㅋ','ㄷㄷ 진짜','ㄹㅇ 미침','개쩐다','실화','말이 됨?','이게 맞음',
+  '진짜 고마움','레전드 사이트','믿겠음','올인함','추가 매수함','더 살까 고민 중','기다리는 중',
+];
+
+function makeCombo(t){
+  const pre=_PRE[Math.floor(Math.random()*_PRE.length)];
+  const mid=_MID_V[Math.floor(Math.random()*_MID_V.length)];
+  const end=_END_V[Math.floor(Math.random()*_END_V.length)];
+  return [t, pre+' '+mid+' '+end];
+}
+
+const userQueue=[];
+const _usedTexts = new Set();
+
+function makeDynamic(retry){
+  retry = retry||0;
+  if(retry > 30) { _usedTexts.clear(); } // 다 쓰면 리셋
+  const t=T[Math.floor(Math.random()*T.length)];
+  const r=Math.random();
+  let result;
+  if(r<0.12){const t2=T[Math.floor(Math.random()*T.length)];result=[t2, A_SITE[Math.floor(Math.random()*A_SITE.length)]];}
+  else if(r<0.22) result=A_DC[Math.floor(Math.random()*A_DC.length)](t);
+  else if(r<0.32) result=A_RAW[Math.floor(Math.random()*A_RAW.length)](t);
+  else if(r<0.44) result=A_RICH[Math.floor(Math.random()*A_RICH.length)](t);
+  else if(r<0.57) result=A_FEEL[Math.floor(Math.random()*A_FEEL.length)](t);
+  else if(r<0.75) result=A_PRAISE[Math.floor(Math.random()*A_PRAISE.length)](t);
+  else if(r<0.88) result=A_Q[Math.floor(Math.random()*A_Q.length)](t);
+  else result=makeCombo(t);
+  const key = result[0]+'|'+result[1];
+  if(_usedTexts.has(key)) return makeDynamic(retry+1);
+  _usedTexts.add(key);
+  return result;
+}
+
+function timeAgo(){
+  const m=Math.floor(Math.random()*58)+1;
+  if(m===1) return '방금 전';
+  if(m<60) return `${m}분 전`;
+  return `${Math.floor(m/60)}시간 전`;
+}
+
+function addComment(){
+  const feed=document.getElementById('cmtFeed');
+  if(!feed) return;
+  // 유저 작성 글 우선 처리
+  if(userQueue.length>0){
+    const {nick,text,timeStr}=userQueue.shift();
+    const div=document.createElement('div');
+    div.className='cmt';
+    div.innerHTML=`<div class="cmt-top"><span class="cmt-nick" style="color:#f0c000">${nick}</span></div><div class="cmt-text">${text}</div>`;
+    feed.insertBefore(div,feed.firstChild);
+    if(feed.children.length>5){const last=feed.lastChild;last.classList.add('leaving');setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},340);}
+    return;
+  }
+  const _d=makeDynamic();
+  const ticker=Array.isArray(_d)?_d[0]:T[Math.floor(Math.random()*T.length)];
+  const text=Array.isArray(_d)?_d[1]:_d;
+  const nick=getNick();
+  const div=document.createElement('div');
+  div.className='cmt';
+  div.innerHTML=`<div class="cmt-top"><span class="cmt-nick">${nick}</span></div><div class="cmt-text"><span class="cmt-ticker">${ticker}</span> ${text}</div>`;
+  feed.insertBefore(div,feed.firstChild);
+  if(feed.children.length>5){
+    const last=feed.lastChild;
+    last.classList.add('leaving');
+    setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},340);
+  }
+}
+
+document.addEventListener('DOMContentLoaded',function(){
+  const feed=document.getElementById('cmtFeed');
+  if(feed){
+    const btn=document.createElement('button');
+    btn.className='write-btn';
+    btn.style.cssText='display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:12px;padding:18px;border-radius:6px;background:#1c1c1c;border:1px solid #333;font-size:16px;font-weight:700;color:#ddd;cursor:pointer;box-sizing:border-box;';
+    btn.innerHTML=`<svg width="15" height="15" viewBox="0 0 13 13" fill="none" style="opacity:.6"><path d="M1 12h3L11.5 4.5a1.5 1.5 0 00-2.12-2.12L1 10v2z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>글쓰기`;
+    btn.onclick=()=>openWriteModal();
+    feed.parentNode.insertBefore(btn,feed.nextSibling);
+  }
+  // 매번 다른 순서로 시작하도록 랜덤 offset
+  const startOffset = Math.floor(Math.random() * 9000);
+  for(let i=0;i<startOffset;i++) makeDynamic(); // 풀 위치 랜덤 이동
+  for(let i=0;i<5;i++) addComment();
+  setInterval(addComment,10000);
+});
+</script>
+<footer class="page">
+  본 정보는 투자 참고용이며, 투자의 책임은 본인에게 있습니다.
+</footer>
+<div class="footer-spacer"></div>
+
+
+
+
+<!-- ── 글쓰기 모달 ── -->
+<style>
+.wmodal-overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,.88);backdrop-filter:blur(8px);
+  align-items:flex-end;justify-content:center;
+}
+.wmodal-overlay.open{display:flex}
+.wmodal{
+  background:#161616;border:1px solid #2a2a2a;
+  border-radius:12px 12px 0 0;
+  width:100%;max-width:640px;padding:24px 20px 36px;
+  position:relative;
+}
+.wmodal-title{
+  font-size:14px;font-weight:700;color:#fff;
+  margin-bottom:18px;letter-spacing:-.2px;
+}
+.wmodal-close{
+  position:absolute;top:16px;right:18px;
+  font-size:20px;color:#555;cursor:pointer;
+  background:none;border:none;line-height:1;
+}
+.wmodal-close:hover{color:#fff}
+.wfield{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.wlabel{font-size:11px;font-weight:600;letter-spacing:.5px;color:#aaa}
+.winput{
+  background:#1a1a1a;border:1px solid #333;border-radius:5px;
+  padding:12px 14px;font-size:15px;color:#fff;outline:none;
+  font-family:inherit;width:100%;box-sizing:border-box;
+  transition:border-color .15s;
+}
+.winput:focus{border-color:#ff2400}
+.winput::placeholder{color:#555}
+textarea.winput{resize:none;min-height:90px;line-height:1.6}
+.wsubmit{
+  width:100%;padding:14px;margin-top:4px;
+  background:#ff2400;color:#fff;border:none;border-radius:5px;
+  font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;
+}
+.wsubmit:active{opacity:.85}
+</style>
+
+<div class="wmodal-overlay" id="wmodalOverlay" onclick="if(event.target===this)closeWriteModal()">
+  <div class="wmodal">
+    <button class="wmodal-close" onclick="closeWriteModal()">×</button>
+    <div class="wmodal-title">커뮤니티</div>
+
+    <div class="wfield">
+      <label class="wlabel">닉네임</label>
+      <input class="winput" id="wNick" type="text" placeholder="익명" value="익명" maxlength="12">
+    </div>
+    <div class="wfield">
+      <label class="wlabel">글 내용</label>
+      <textarea class="winput" id="wText" placeholder="내용을 입력하세요" maxlength="100"></textarea>
+    </div>
+    <p style="font-size:12px;color:#aaa;text-align:center;margin-bottom:10px">등록 후 1~60분 사이에 커뮤니티에 표시됩니다.</p>
+    <button class="wsubmit" onclick="submitWrite()">글 올리기</button>
+  </div>
+</div>
+
+<script>
+function openWriteModal(){
+  document.getElementById('wmodalOverlay').classList.add('open');
+  setTimeout(()=>document.getElementById('wNick').focus(), 100);
+}
+function closeWriteModal(){
+  document.getElementById('wmodalOverlay').classList.remove('open');
+  document.getElementById('wNick').value='';
+  document.getElementById('wNick').value='익명';
+  document.getElementById('wText').value='';
+}
+
+// 등록된 댓글 큐
+
+function submitWrite(){
+  const nick = document.getElementById('wNick').value.trim() || '익명';
+  const text = document.getElementById('wText').value.trim();
+  if(!text){ alert('내용을 입력해주세요'); return; }
+
+  closeWriteModal();
+  // 1~60분 사이 랜덤 딜레이 후 피드에 표시
+  const delayMins = Math.floor(Math.random() * 60) + 1;
+  const delayMs = delayMins * 60 * 1000;
+  setTimeout(() => {
+    const timeStr = delayMins === 1 ? '방금 전' : `${delayMins}분 전`;
+    userQueue.push({nick, text, timeStr});
+  }, delayMs);
+}
+
+
+
+document.addEventListener('keydown', e => { if(e.key==='Escape') closeWriteModal(); });
+</script>
+
+</body>
+</html>
