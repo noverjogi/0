@@ -690,10 +690,11 @@ function addComment(){
   const feed=document.getElementById('cmtFeed');
   if(!feed) return;
   if(userQueue.length>0){
-    const {nick,text}=userQueue.shift();
+    const {nick,text,ticker}=userQueue.shift();
     const div=document.createElement('div');
     div.className='cmt';
-    div.innerHTML=`<div class="cmt-top"><span class="cmt-nick" style="color:#f0c000">${nick}</span></div><div class="cmt-text">${text}</div>`;
+    const tTag=ticker?`<span class="cmt-ticker">${ticker}</span> `:'';
+    div.innerHTML=`<div class="cmt-top"><span class="cmt-nick" style="color:#f0c000">${nick}</span></div><div class="cmt-text">${tTag}${text}</div>`;
     feed.insertBefore(div,feed.firstChild);
     if(feed.children.length>5){const last=feed.lastChild;last.classList.add('leaving');setTimeout(()=>{if(last.parentNode)last.parentNode.removeChild(last);},340);}
     return;
@@ -778,6 +779,17 @@ textarea.winput{resize:none;min-height:90px;line-height:1.6}
   font-size:14px;font-weight:700;cursor:pointer;letter-spacing:.3px;
 }
 .wsubmit:active{opacity:.85}
+.wticker-group{display:flex;gap:8px;flex-wrap:wrap}
+.wticker-btn{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;font-weight:700;letter-spacing:1px;
+  padding:7px 16px;border-radius:3px;cursor:pointer;
+  background:transparent;
+  border:1px solid rgba(255,36,0,.25);color:rgba(255,36,0,.5);
+  transition:all .15s;
+}
+.wticker-btn:hover{border-color:rgba(255,36,0,.5);color:rgba(255,36,0,.8)}
+.wticker-btn.active{background:rgba(255,36,0,.15);border-color:var(--red);color:var(--red)}
 </style>
 
 <div class="wmodal-overlay" id="wmodalOverlay" onclick="if(event.target===this)closeWriteModal()">
@@ -785,6 +797,14 @@ textarea.winput{resize:none;min-height:90px;line-height:1.6}
     <button class="wmodal-close" onclick="closeWriteModal()">×</button>
     <div class="wmodal-title">커뮤니티</div>
 
+    <div class="wfield">
+      <label class="wlabel">종목</label>
+      <div class="wticker-group" id="wTickerGroup">
+        <button type="button" class="wticker-btn active" data-ticker="SCKT">SCKT</button>
+        <button type="button" class="wticker-btn" data-ticker="MGRT">MGRT</button>
+        <button type="button" class="wticker-btn" data-ticker="MRLN">MRLN</button>
+      </div>
+    </div>
     <div class="wfield">
       <label class="wlabel">닉네임</label>
       <input class="winput" id="wNick" type="text" placeholder="익명" value="익명" maxlength="12">
@@ -804,22 +824,30 @@ function openWriteModal(){
 }
 function closeWriteModal(){
   document.getElementById('wmodalOverlay').classList.remove('open');
-  document.getElementById('wNick').value='';
   document.getElementById('wNick').value='익명';
   document.getElementById('wText').value='';
+  document.querySelectorAll('#wTickerGroup .wticker-btn').forEach((b,i)=>b.classList.toggle('active',i===0));
 }
+document.addEventListener('DOMContentLoaded',function(){
+  document.querySelectorAll('#wTickerGroup .wticker-btn').forEach(btn=>{
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('#wTickerGroup .wticker-btn').forEach(b=>b.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+});
 
 // 등록된 댓글 큐
 
 function submitWrite(){
   const nick = document.getElementById('wNick').value.trim() || '익명';
   const text = document.getElementById('wText').value.trim();
+  const ticker = document.querySelector('#wTickerGroup .wticker-btn.active')?.dataset.ticker || 'SCKT';
   if(!text){ alert('내용을 입력해주세요'); return; }
 
   closeWriteModal();
-  // 1~3분 사이 랜덤 딜레이 후 봇 댓글 타이밍에 표시
   const delayMs = (Math.floor(Math.random() * 3) + 1) * 60 * 1000;
-  setTimeout(() => { userQueue.push({nick, text}); }, delayMs);
+  setTimeout(() => { userQueue.push({nick, text, ticker}); }, delayMs);
 }
 
 
