@@ -314,11 +314,8 @@ footer{
 .rcard.r2 .rname, .rcard.r3 .rname{color:var(--t2)}
 
 /* ── BG CANVAS ── */
-#bgCanvas{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;}
+#bgCanvas{display:none;}
 nav{z-index:200!important;}
-.hero,.page,footer,.footer-spacer,
-.wmodal-overlay{position:relative;z-index:1;}
-.hero-bg{z-index:0;}
 
 /* ── WRITE NOTICE ── */
 .wnotice{
@@ -949,7 +946,7 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeWriteModal
 
 <!-- ── BACKGROUND CANVAS ── -->
 <script>
-(function(){
+(function(){return;// disabled
   const cv=document.createElement('canvas');
   cv.id='bgCanvas';
   document.body.prepend(cv);
