@@ -961,82 +961,206 @@ document.addEventListener('keydown', e => { if(e.key==='Escape') closeWriteModal
   window.addEventListener('resize',resize);
   resize();
 
-  /* ── 5 orbs rendered with 'screen' blending — overlap = brighter ── */
+  /* ── 오프스크린 점 그리드 (정적, resize마다 재생성) ── */
+  let gridCanvas=null;
+  function buildGrid(){
+    gridCanvas=document.createElement('canvas');
+    gridCanvas.width=W; gridCanvas.height=H;
+    const gc=gridCanvas.getContext('2d');
+    const gs=46, cx=W/2, cy=H/2;
+    for(let x=(W%gs)/2;x<W;x+=gs){
+      for(let y=(H%gs)/2;y<H;y+=gs){
+        const dx=(x-cx)/W, dy=(y-cy)/H;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        const a=Math.max(0,0.22-d*0.55);
+        if(a<0.005) continue;
+        gc.fillStyle=`rgba(255,36,0,${a.toFixed(3)})`;
+        gc.fillRect(x,y,1.4,1.4);
+      }
+    }
+  }
+  buildGrid();
+  window.addEventListener('resize',()=>{resize();buildGrid();});
+
+  /* ── 블립 (레이더 스윕이 지나갈 때 생성) ── */
+  const blips=[];
+  let lastBlipTime=0;
+  function spawnBlip(angle,R,cx,cy){
+    const d=R*(0.1+Math.random()*0.86);
+    blips.push({
+      x:cx+Math.cos(angle)*d,
+      y:cy+Math.sin(angle)*d,
+      life:1,
+      decay:0.0018+Math.random()*0.004,
+      r:1.2+Math.random()*3,
+    });
+  }
+
+  /* ── 주변 떠다니는 파티클 ── */
+  const pts=Array.from({length:35},()=>({
+    x:Math.random()*W, y:Math.random()*H,
+    vx:(Math.random()-.5)*0.04, vy:(Math.random()-.5)*0.04,
+    a:0.04+Math.random()*0.1, r:0.6+Math.random()*1.6,
+  }));
+
+  /* ── 앰비언트 오브 (3개, 느리게 부유) ── */
   const orbs=[
-    {cx:.08, cy:.22, rx:.28,ry:.2,  sz:.7,  r:200,g:12,b:0, a:.38, px:0,   py:1.2, sx:.00016,sy:.00013},
-    {cx:.92, cy:.78, rx:.22,ry:.28, sz:.62, r:160,g:6, b:0, a:.32, px:2.1, py:.55, sx:.00012,sy:.00018},
-    {cx:.48, cy:.5,  rx:.18,ry:.16, sz:.5,  r:230,g:20,b:0, a:.24, px:1.0, py:2.4, sx:.00021,sy:.00015},
-    {cx:.18, cy:.88, rx:.2, ry:.14, sz:.44, r:140,g:5, b:0, a:.28, px:3.1, py:.8,  sx:.00014,sy:.00020},
-    {cx:.82, cy:.12, rx:.24,ry:.18, sz:.48, r:190,g:14,b:0, a:.22, px:1.6, py:3.0, sx:.00017,sy:.00012},
+    {bx:.05,by:.18,rx:.2,ry:.14,r:0.38,a:.30,px:0,   py:0,   sx:.00013,sy:.00011},
+    {bx:.92,by:.80,rx:.16,ry:.2,r:0.30,a:.22,px:2.1, py:.55, sx:.00010,sy:.00015},
+    {bx:.50,by:.50,rx:.12,ry:.1,r:0.22,a:.10,px:1.2, py:2.2, sx:.00019,sy:.00013},
   ];
-
-  /* ── 2 glowing arcs (centered, rotating) ── */
-  const arcs=[
-    {rs:.42, span:Math.PI*.68, phase:0,          spd: .000048, blur:60, al:.28, lw:1.4},
-    {rs:.68, span:Math.PI*.52, phase:Math.PI*.9, spd:-.000034, blur:80, al:.18, lw:1.0},
-  ];
-
-  /* ── 1 diagonal light streak ── */
-  let streakProg=0;
 
   function frame(ts){
     ctx.clearRect(0,0,W,H);
     const cx=W/2, cy=H/2;
+    S=Math.min(W,H);
+    const R=S*0.44;
 
-    /* orbs — screen blend so overlaps bloom */
+    /* 1. 점 그리드 */
+    if(gridCanvas) ctx.drawImage(gridCanvas,0,0);
+
+    /* 2. 레이더 링 & 크로스헤어 */
     ctx.save();
-    ctx.globalCompositeOperation='screen';
-    for(const o of orbs){
-      const x=(o.cx+Math.sin(ts*o.sx+o.px)*o.rx)*W;
-      const y=(o.cy+Math.cos(ts*o.sy+o.py)*o.ry)*H;
-      const r=o.sz*S*(0.84+Math.sin(ts*.00028+o.px)*.16);
-      const gr=ctx.createRadialGradient(x,y,0,x,y,r);
-      gr.addColorStop(0,  `rgba(${o.r},${o.g},${o.b},${o.a})`);
-      gr.addColorStop(.35,`rgba(${o.r},${o.g},${o.b},${+(o.a*.28).toFixed(3)})`);
-      gr.addColorStop(1,  `rgba(${o.r},${o.g},${o.b},0)`);
-      ctx.beginPath();ctx.arc(x,y,r,0,PI2);
-      ctx.fillStyle=gr;ctx.fill();
-    }
+    ctx.strokeStyle='rgba(255,36,0,0.14)';
+    ctx.lineWidth=0.8;
+    [1,.67,.34].forEach(f=>{
+      ctx.beginPath();ctx.arc(cx,cy,R*f,0,PI2);ctx.stroke();
+    });
+    ctx.strokeStyle='rgba(255,36,0,0.06)';
+    ctx.setLineDash([3,10]);
+    [[cx-R,cy,cx+R,cy],[cx,cy-R,cx,cy+R],
+     [cx-R*.72,cy-R*.72,cx+R*.72,cy+R*.72],
+     [cx+R*.72,cy-R*.72,cx-R*.72,cy+R*.72]
+    ].forEach(([x1,y1,x2,y2])=>{
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    /* 중심 점 */
+    ctx.shadowColor='rgba(255,36,0,1)'; ctx.shadowBlur=10;
+    ctx.fillStyle='rgba(255,60,10,0.8)';
+    ctx.beginPath();ctx.arc(cx,cy,2.5,0,PI2);ctx.fill();
     ctx.restore();
 
-    /* arcs */
-    for(const a of arcs){
-      const rot=ts*a.spd+a.phase;
-      const r=a.rs*S;
+    /* 3. 레이더 스윕 */
+    const sweepAngle=(ts*0.00082)%PI2;
+    if(ts-lastBlipTime>120){
+      lastBlipTime=ts;
+      if(Math.random()<0.55) spawnBlip(sweepAngle,R,cx,cy);
+    }
+
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    /* 트레일 (28 슬라이스 쐐기) */
+    const trailSpan=Math.PI*0.62;
+    const slices=28;
+    for(let i=0;i<slices;i++){
+      const t=i/slices;
+      const a0=sweepAngle-trailSpan*(1-t);
+      const a1=sweepAngle-trailSpan*(1-(i+1)/slices);
+      const alpha=t*t*0.20;
+      const g=ctx.createRadialGradient(cx,cy,0,cx,cy,R*1.02);
+      g.addColorStop(0,`rgba(255,50,0,${(alpha*1.6).toFixed(3)})`);
+      g.addColorStop(0.5,`rgba(255,36,0,${alpha.toFixed(3)})`);
+      g.addColorStop(1,'rgba(255,36,0,0)');
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.moveTo(cx,cy);
+      ctx.arc(cx,cy,R*1.02,a0,a1);
+      ctx.closePath();ctx.fill();
+    }
+    /* 리딩 엣지 (밝은 선) */
+    ctx.save();
+    ctx.shadowColor='rgba(255,70,0,1)'; ctx.shadowBlur=22;
+    ctx.strokeStyle='rgba(255,100,20,0.9)'; ctx.lineWidth=1.6; ctx.lineCap='round';
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(sweepAngle)*R,cy+Math.sin(sweepAngle)*R);
+    ctx.stroke();
+    /* 이중 글로우 */
+    ctx.shadowBlur=8;
+    ctx.strokeStyle='rgba(255,200,100,0.4)'; ctx.lineWidth=0.5;
+    ctx.beginPath();
+    ctx.moveTo(cx,cy);
+    ctx.lineTo(cx+Math.cos(sweepAngle)*R,cy+Math.sin(sweepAngle)*R);
+    ctx.stroke();
+    ctx.restore();
+    ctx.restore();
+
+    /* 4. 블립 */
+    for(let i=blips.length-1;i>=0;i--){
+      const b=blips[i];
+      b.life-=b.decay;
+      if(b.life<=0){blips.splice(i,1);continue;}
+      const pulse=Math.sin(ts*0.0038+i*1.7)*0.35+0.65;
+      const outerR=b.r*(1+(1-b.life)*4);
       ctx.save();
-      ctx.shadowColor='rgba(255,50,0,1)';
-      ctx.shadowBlur=a.blur;
-      ctx.strokeStyle=`rgba(255,60,5,${a.al})`;
-      ctx.lineWidth=a.lw;ctx.lineCap='round';
-      ctx.beginPath();ctx.arc(cx,cy,r,rot,rot+a.span);ctx.stroke();
-      ctx.shadowBlur=a.blur*.3;
-      ctx.strokeStyle=`rgba(255,100,40,${a.al*.5})`;
-      ctx.lineWidth=a.lw*.3;
-      ctx.beginPath();ctx.arc(cx,cy,r,rot,rot+a.span);ctx.stroke();
+      ctx.globalCompositeOperation='screen';
+      /* 링 */
+      ctx.shadowColor='rgba(255,36,0,0.9)'; ctx.shadowBlur=12;
+      ctx.strokeStyle=`rgba(255,80,30,${(b.life*pulse*0.85).toFixed(3)})`;
+      ctx.lineWidth=0.9;
+      ctx.beginPath();ctx.arc(b.x,b.y,outerR,0,PI2);ctx.stroke();
+      /* 코어 */
+      ctx.shadowBlur=6;
+      ctx.fillStyle=`rgba(255,120,50,${(b.life*pulse).toFixed(3)})`;
+      ctx.beginPath();ctx.arc(b.x,b.y,b.r*0.55,0,PI2);ctx.fill();
       ctx.restore();
     }
 
-    /* diagonal streak — slow crawl top-right → bottom-left */
-    streakProg=(ts*.000014)%1;
-    const sx1=W*(1.2-streakProg*1.8), sy1=-H*.1+streakProg*H*.3;
-    const sx2=sx1-W*.18, sy2=sy1+H*.55;
-    const sg=ctx.createLinearGradient(sx1,sy1,sx2,sy2);
-    sg.addColorStop(0,'rgba(255,40,0,0)');
-    sg.addColorStop(.4,'rgba(255,40,0,.07)');
-    sg.addColorStop(.6,'rgba(255,40,0,.07)');
-    sg.addColorStop(1,'rgba(255,40,0,0)');
+    /* 5. 파티클 */
     ctx.save();
-    ctx.strokeStyle=sg;
-    ctx.lineWidth=1.5;
-    ctx.globalAlpha=.9;
-    ctx.beginPath();ctx.moveTo(sx1,sy1);ctx.lineTo(sx2,sy2);ctx.stroke();
+    ctx.globalCompositeOperation='screen';
+    for(const p of pts){
+      p.x=(p.x+p.vx+W)%W; p.y=(p.y+p.vy+H)%H;
+      ctx.fillStyle=`rgba(255,36,0,${p.a.toFixed(3)})`;
+      ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,PI2);ctx.fill();
+    }
     ctx.restore();
 
-    /* edge vignette */
-    const vg=ctx.createRadialGradient(cx,cy,S*.18,cx,cy,S*.92);
+    /* 6. 앰비언트 오브 */
+    ctx.save();
+    ctx.globalCompositeOperation='screen';
+    for(const o of orbs){
+      const ox=(o.bx+Math.sin(ts*o.sx+o.px)*o.rx)*W;
+      const oy=(o.by+Math.cos(ts*o.sy+o.py)*o.ry)*H;
+      const rad=o.r*S;
+      const g=ctx.createRadialGradient(ox,oy,0,ox,oy,rad);
+      g.addColorStop(0,`rgba(210,24,0,${o.a})`);
+      g.addColorStop(0.4,`rgba(170,15,0,${(o.a*0.3).toFixed(3)})`);
+      g.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=g;
+      ctx.beginPath();ctx.arc(ox,oy,rad,0,PI2);ctx.fill();
+    }
+    ctx.restore();
+
+    /* 7. 수평 스캔라인 */
+    const scanY=(ts*0.042)%H;
+    const sg=ctx.createLinearGradient(0,scanY-90,0,scanY+40);
+    sg.addColorStop(0,'rgba(255,36,0,0)');
+    sg.addColorStop(0.6,'rgba(255,36,0,0.032)');
+    sg.addColorStop(1,'rgba(255,36,0,0)');
+    ctx.fillStyle=sg; ctx.fillRect(0,scanY-90,W,130);
+
+    /* 8. 대각선 광선 2개 */
+    [[.00011,0],[.000078,1.4]].forEach(([spd,ph])=>{
+      const prog=(ts*spd+ph)%1;
+      const x1=W*(1.3-prog*2.0), y1=-H*0.12+prog*H*0.35;
+      const x2=x1-W*0.22, y2=y1+H*0.6;
+      const dl=ctx.createLinearGradient(x1,y1,x2,y2);
+      dl.addColorStop(0,'rgba(255,40,0,0)');
+      dl.addColorStop(0.45,'rgba(255,40,0,0.055)');
+      dl.addColorStop(0.55,'rgba(255,40,0,0.055)');
+      dl.addColorStop(1,'rgba(255,40,0,0)');
+      ctx.save();
+      ctx.strokeStyle=dl; ctx.lineWidth=1.2; ctx.globalAlpha=0.85;
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();
+      ctx.restore();
+    });
+
+    /* 9. 비네트 */
+    const vg=ctx.createRadialGradient(cx,cy,S*0.14,cx,cy,S*0.98);
     vg.addColorStop(0,'rgba(0,0,0,0)');
-    vg.addColorStop(1,'rgba(0,0,0,.58)');
-    ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+    vg.addColorStop(1,'rgba(0,0,0,0.72)');
+    ctx.fillStyle=vg; ctx.fillRect(0,0,W,H);
 
     requestAnimationFrame(frame);
   }
